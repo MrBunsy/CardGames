@@ -14,6 +14,7 @@ import { ReplaySubject } from 'rxjs';
 
 export class Bid {
     public player: DeclarationWhistPlayer;
+    public playerIndex: number;
     public bid: number;
 }
 
@@ -42,7 +43,7 @@ export class LocalDeclarationWhist { //implements IGame
     public start() {
         this.deck.deal(this.players);
         this.players[this.bidFirst].declareBid([]).pipe(first()).subscribe(
-            bid => this.playerBid(this.bidFirst, bid)
+            bid => this.playerBid({ playerIndex: this.bidFirst, bid: bid, player: this.players[this.bidFirst] })
         )
     }
 
@@ -60,31 +61,31 @@ export class LocalDeclarationWhist { //implements IGame
     /**
      * [[playerIndex, bid]]
      */
-    private getBids(): [number, number][] {
+    private getBids(): Bid[] {
 
-        let bids: [number, number][] = [];
+        let bids: Bid[] = [];
 
         for (let player of this.getPlayersInOrder(this.bidFirst)) {
             if (player.bid == null) {
                 break;
             }
-            bids.push([player.index, player.bid]);
+            bids.push({ playerIndex: player.index, bid: player.bid, player: player.player });
         }
 
         return bids;
     }
 
-    private playerBid(playerIndex: number, bid: number) {
-        console.log("Player " + playerIndex + " (" + this.players[playerIndex].name + ") bid " + bid);
-        this.playerInfos[playerIndex].bid = bid;
-        this.playerBids.next({ player: this.players[playerIndex], bid: bid });
+    private playerBid(bid: Bid) {
+        console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid);
+        this.playerInfos[bid.playerIndex].bid = bid.bid;
+        this.playerBids.next(bid);
 
         let bids = this.getBids();
 
         if (bids.length != this.players.length) {
-            let nextPlayer = (playerIndex + 1) % this.players.length;
+            let nextPlayer = (bid.playerIndex + 1) % this.players.length;
             this.playerInfos[nextPlayer].player.declareBid(bids).pipe(first()).subscribe(
-                bid => this.playerBid(nextPlayer, bid)
+                bid => this.playerBid({ bid: bid, player: this.players[nextPlayer], playerIndex: nextPlayer })
             )
         } else {
             console.log("All bids in");
@@ -104,8 +105,4 @@ export class LocalDeclarationWhist { //implements IGame
 
         return players;
     }
-
-    // public usePlayers(players: DeclarationWhistPlayer[]) {
-
-    // }
 }

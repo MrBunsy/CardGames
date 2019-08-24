@@ -1,6 +1,7 @@
 import { Card, Suit, suitArray } from './card';
 import { Game } from './game';
 import { Observable, of } from 'rxjs';
+import { Bid } from './declaration-whist';
 
 export interface CardPlayer {
     dealHand(cards: Card[]);
@@ -13,7 +14,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
      * Get our estimated number of tricks
      * @param otherEstimates estimates of the preceeding players, in order. array of tuples of player index and esimate [(0, 13), (1,10)]
      */
-    declareBid(otherEstimates: [number, number][]): Observable<number>;
+    declareBid(otherEstimates: Bid[]): Observable<number>;
 
     /**
      * This player's bid was highest, they get to choose trumps
@@ -34,7 +35,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
     dealHand(cards: Card[]) {
         // throw new Error("Method not implemented.");
     }
-    declareBid(otherEstimates: [number, number][]): Observable<number> {
+    declareBid(otherEstimates: Bid[]): Observable<number> {
         throw new Error("Method not implemented.");
     }
     chooseTrumps(): Observable<Suit> {
@@ -75,7 +76,7 @@ export class Moron implements DeclarationWhistPlayer {
      * Get our estimated number of tricks
      * @param otherEstimates estimates of the preceeding players, in order. array of tuples of player index and esimate [(0, 13), (1,10)]
      */
-    public declareBid(otherEstimates: [number, number][]): Observable<number> {
+    public declareBid(otherEstimates: Bid[]): Observable<number> {
 
         let preferedTrickEstimate = this.preferedTrickEstimate();
 
