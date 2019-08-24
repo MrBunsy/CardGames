@@ -1,4 +1,3 @@
-<div class="hhand-compact">
-  <card *ngFor="let card of deck" [card]="card"></card>
-  <!-- <img *ngFor="let card of deck" src="assets/cards/vpc/{{card.toString()}}.svg" class="card" alt="{{card.toString()}}" /> -->
+<div *ngFor="let hand of hands">
+  <hand [cards]="hand" [active]="true"></hand>
 </div>

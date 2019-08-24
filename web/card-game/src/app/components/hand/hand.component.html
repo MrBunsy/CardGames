@@ -1,0 +1,4 @@
+<div class="hand hhand-compact {{active ? 'active-hand' : ''}}">
+  <!--To get the CSS from cardsjs working, have to have an image directly in side a hand, so can't encapsulate in the Card component easily -->
+  <img *ngFor="let card of cards" src="assets/cards/{{style}}/{{card.toString()}}.svg" class="card" alt="{{card.toString()}}" />
+</div>

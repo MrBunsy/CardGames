@@ -1,11 +1,15 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewEncapsulation } from '@angular/core';
 import { DeckService } from 'src/app/services/deck.service';
 import { Card } from 'src/app/models/card';
 
+/**
+ * Component to render a single card, by itself.
+ */
 @Component({
   selector: 'card',
   templateUrl: './card.component.html',
-  styleUrls: ['./card.component.css']
+  styleUrls: ['./card.component.css'],
+  encapsulation: ViewEncapsulation.None
 })
 export class CardComponent implements OnInit {
 
