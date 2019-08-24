@@ -3,4 +3,10 @@
   <ng-container *ngIf="item.type == 'Bid'">Player {{item.event.player.name}} bid {{item.event.bid}}</ng-container>
   <ng-container *ngIf="item.type == 'Trumps'">Player {{item.event.player.name}} chose {{item.event.suit}} as trumps</ng-container>
   <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.event.player.name}} played {{item.event.card.toString()}}</ng-container>
+  <ng-container *ngIf="item.type == 'TrickWon'">Player {{item.event.player.name}} won the trick</ng-container>
+  <ng-container *ngIf="item.type == 'MatchFinished'">Match Complete. Scores:
+    <ng-container *ngFor="let player of item.event.players">
+        {{player.player.name}} bid  {{player.bid}}  won  {{player.tricksWon}}  =  {{player.score}}  points
+    </ng-container>
+  </ng-container>
 </div>

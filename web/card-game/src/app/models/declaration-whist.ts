@@ -29,6 +29,9 @@ export class Trumps extends EventInfo {
     public suit: Suit;
 }
 
+class Results {
+    public players: PlayerInfo[];
+}
 // export class TrickInfo{
 //     public player: DeclarationWhistPlayer;
 // }
@@ -36,6 +39,8 @@ export class Trumps extends EventInfo {
 class PlayerInfo {
 
     public bid: number = null;
+    public tricksWon: number = 0;
+    public score: number = 0;
 
     constructor(public player: DeclarationWhistPlayer, public index: number) { }
 }
@@ -43,7 +48,10 @@ class PlayerInfo {
 class Trick {
     constructor(public openedBy: DeclarationWhistPlayer) { }
     public cards: CardInTrick[] = [];
+    public winner: DeclarationWhistPlayer;
 }
+
+
 
 export enum DeclarationWhistGameEventsType {
     Bid,
@@ -57,8 +65,8 @@ export enum DeclarationWhistGameEventsType {
 export class DeclarationWhistGameEvents {
     // public type: DeclarationWhistGameEventsType;
     //turns out enums are a PITA in TS/angular
-    public type: "Bid" | "Trumps" | "TrickStart" | "CardPlayed" | "TrickWon";
-    public event: Bid | Trumps | CardInTrick;
+    public type: "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished";
+    public event: Bid | Trumps | CardInTrick | EventInfo | Results;
 }
 
 export class LocalDeclarationWhist { //implements IGame
@@ -156,6 +164,18 @@ export class LocalDeclarationWhist { //implements IGame
 
     }
 
+    /**
+     * I'm sure there's a proper way to do this
+     * @param player 
+     */
+    private getPlayerInfo(player: DeclarationWhistPlayer) {
+        for (let playerInfo of this.playerInfos) {
+            if (playerInfo.player == player) {
+                return playerInfo;
+            }
+        }
+    }
+
     private endTrick() {
         console.log("Trick ended");
 
@@ -186,7 +206,36 @@ export class LocalDeclarationWhist { //implements IGame
         }
 
         console.log(winner.name + " won the trick")
+        this.gameEvents.next({ type: "TrickWon", event: { player: winner, playerIndex: this.players.indexOf(winner) } });
 
+        if (this.tricks.length < 13) {
+            currentTrick.winner = winner;
+            this.getPlayerInfo(winner).tricksWon++;
+            this.startTrick(winner);
+        } else {
+            //round ended!
+            this.endMatch();
+        }
+    }
+
+    private endMatch() {
+        console.log("End of Match");
+        for (let player of this.playerInfos) {
+            let score = player.tricksWon + (player.tricksWon == player.bid ? 10 : 0);
+            player.score += score;
+            console.log(player.player.name + " bid " + player.bid + ", won " + player.tricksWon + " = " + score + " points");
+        }
+
+        let topScore = 0;
+        let winner: PlayerInfo;
+        for (let player of this.playerInfos) {
+            if (player.score > topScore) {
+                topScore = player.score;
+                winner = player;
+            }
+        }
+
+        this.gameEvents.next({ type: "MatchFinished", event: { players: this.playerInfos } })
     }
 
     /**
