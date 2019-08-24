@@ -8,7 +8,7 @@ export interface CardPlayer {
 
 export interface DeclarationWhistPlayer extends CardPlayer {
 
-
+    name: string;
     /**
      * Get our estimated number of tricks
      * @param otherEstimates estimates of the preceeding players, in order. array of tuples of player index and esimate [(0, 13), (1,10)]
@@ -28,6 +28,9 @@ export interface DeclarationWhistPlayer extends CardPlayer {
 }
 
 export class LocalHuman implements DeclarationWhistPlayer {
+
+    public name: string;
+
     dealHand(cards: Card[]) {
         // throw new Error("Method not implemented.");
     }
