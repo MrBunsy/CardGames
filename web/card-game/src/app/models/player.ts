@@ -1,7 +1,7 @@
 import { Card, Suit, suitArray } from './card';
 import { Game } from './game';
 import { Observable, of } from 'rxjs';
-import { Bid } from './declaration-whist';
+import { Bid, CardInTrick } from './declaration-whist';
 
 export interface CardPlayer {
     dealHand(cards: Card[]);
@@ -25,7 +25,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    playCard(trick: [number, Card][]): Observable<Card>;
+    playCard(trick: CardInTrick[]): Observable<Card>;
 }
 
 export class LocalHuman implements DeclarationWhistPlayer {
@@ -41,7 +41,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
     chooseTrumps(): Observable<Suit> {
         throw new Error("Method not implemented.");
     }
-    playCard(trick: [number, Card][]): Observable<Card> {
+    playCard(trick: CardInTrick[]): Observable<Card> {
         throw new Error("Method not implemented.");
     }
 
@@ -120,7 +120,7 @@ export class Moron implements DeclarationWhistPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    public playCard(trick: [number, Card][]): Observable<Card> {
+    public playCard(trick: CardInTrick[]): Observable<Card> {
 
         let cardIndex = 0;
 
@@ -129,6 +129,15 @@ export class Moron implements DeclarationWhistPlayer {
             cardIndex = Math.floor(Math.random() * this.cards.length);
         } else {
             //have to follow suit if we can
+            let suit = trick[0].card.suit;
+            let sortedCards = Card.getCardsInSuits(this.cards);
+            if (sortedCards[suit].length > 0) {
+                let wantCard = sortedCards[suit][Math.floor(Math.random() * sortedCards[suit].length)];
+                cardIndex = this.cards.lastIndexOf(wantCard);
+            } else {
+                //can't follow suit
+                cardIndex = Math.floor(Math.random() * this.cards.length);
+            }
         }
 
         let card = this.cards[cardIndex];

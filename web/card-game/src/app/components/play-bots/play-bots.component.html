@@ -1,1 +1,6 @@
-<div *ngFor="let item of log">{{item}}</div>
+<div *ngFor="let item of log">
+  {{item.type}}:
+  <ng-container *ngIf="item.type == 'Bid'">Player {{item.event.player.name}} bid {{item.event.bid}}</ng-container>
+  <ng-container *ngIf="item.type == 'Trumps'">Player {{item.event.player.name}} chose {{item.event.suit}} as trumps</ng-container>
+  <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.event.player.name}} played {{item.event.card.toString()}}</ng-container>
+</div>

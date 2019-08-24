@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Moron, LocalHuman, DeclarationWhistPlayer } from 'src/app/models/player';
-import { LocalDeclarationWhist } from 'src/app/models/declaration-whist';
+import { LocalDeclarationWhist, DeclarationWhistGameEvents } from 'src/app/models/declaration-whist';
 import { DeckService } from 'src/app/services/deck.service';
 import { Subscription } from 'rxjs';
 
@@ -16,7 +16,7 @@ export class PlayBotsComponent implements OnInit, OnDestroy {
   public player: LocalHuman;
   public game: LocalDeclarationWhist;
 
-  public log: string[] = [];
+  public log: DeclarationWhistGameEvents[] = [];
 
   private subscriptions: Subscription[] = [];
 
@@ -34,7 +34,7 @@ export class PlayBotsComponent implements OnInit, OnDestroy {
 
     this.game = new LocalDeclarationWhist(this.players, this.deckService.getDeck(), 0);
 
-    this.game.playerBids.subscribe(bid => this.log.push(bid.player.name + " bid " + bid.bid));
+    this.game.gameEvents.subscribe(event => this.log.push(event));
 
     this.game.start();
 

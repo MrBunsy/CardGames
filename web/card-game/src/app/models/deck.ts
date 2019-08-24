@@ -1,6 +1,5 @@
-import { Card, suitArray, Suit } from './card';
+import { Card, suitArray } from './card';
 import shuffle from '../misc';
-import { Hand } from './hand';
 import { CardPlayer } from './player';
 export class Deck {
 

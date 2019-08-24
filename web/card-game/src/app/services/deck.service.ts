@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Card, Suit, suitArray } from '../models/card';
-import shuffle from '../misc';
+import { Card, Suit } from '../models/card';
 import { Deck } from '../models/deck';
 
 // const shuffle = require('fisher-yates-shuffle');

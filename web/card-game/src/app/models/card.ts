@@ -5,6 +5,7 @@ export enum Suit {
     Heart = "H",
     Spade = "S"
 }
+//note, turns out enums in typescript are shit. Actual JS of this enum: {Club: "C", Diamond: "D", Heart: "H", Spade: "S"}
 
 export const suitArray: Suit[] = [Suit.Club, Suit.Diamond, Suit.Heart, Suit.Spade];
 
@@ -54,6 +55,20 @@ export class Card {
         }
 
         return count;
+    }
+
+    public static getCardsInSuits(cards: Card[]): Map<Suit, Card[]> {
+        let sortedCards = new Map<Suit, Card[]>();
+        sortedCards[Suit.Club] = [];
+        sortedCards[Suit.Diamond] = [];
+        sortedCards[Suit.Heart] = [];
+        sortedCards[Suit.Spade] = [];
+
+        for (let card of cards) {
+            sortedCards[card.suit].push(card);
+        }
+
+        return sortedCards;
     }
 
 }
