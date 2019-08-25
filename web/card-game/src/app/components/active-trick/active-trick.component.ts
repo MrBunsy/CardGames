@@ -35,10 +35,8 @@ export class ActiveTrickComponent implements OnInit, OnDestroy {
     this.subs.push(this.game.getCurrentTrick().subscribe(
       trick => {
         this.cards = [null, null, null, null];
-        // for (let i = 0; i < this.cards.length; i++) {
-        //   this.cards[i] = null;
-        // }
-        if (trick != null && trick.winner == null) {
+        //if four cards, then this trick has been won
+        if (trick != null && trick.cards.length < 4) {
           let z = 0;
           for (let card of trick.cards) {
             this.cards[card.playerIndex] = { card: card.card, zIndex: z };

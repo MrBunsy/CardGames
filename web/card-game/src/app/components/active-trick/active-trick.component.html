@@ -1,14 +1,14 @@
 <div class="trick">
-  <div class="left">
-    <card *ngIf="cards[0]" [card]="cards[0].card"></card>
+  <div class="left" *ngIf="cards[0]" [style.zIndex]="cards[0].zIndex">
+    <card [card]="cards[0].card"></card>
   </div>
-  <div class="top">
-    <card *ngIf="cards[1]" [card]="cards[1].card"></card>
+  <div class="top" *ngIf="cards[1]" [style.zIndex]="cards[1].zIndex">
+    <card [card]="cards[1].card"></card>
   </div>
-  <div class="right">
-    <card *ngIf="cards[2]" [card]="cards[2].card"></card>
+  <div class="right" *ngIf="cards[2]" [style.zIndex]="cards[2].zIndex">
+    <card [card]="cards[2].card"></card>
   </div>
-  <div class="bottom">
-    <card *ngIf="cards[3]" [card]="cards[3].card"></card>
+  <div class="bottom" *ngIf="cards[3]" [style.zIndex]="cards[3].zIndex">
+    <card [card]="cards[3].card"></card>
   </div>
 </div>

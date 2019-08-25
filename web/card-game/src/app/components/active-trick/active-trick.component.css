@@ -1,0 +1,28 @@
+.trick{
+    position: relative;
+    padding-left:35px;
+}
+
+.left{
+    position:absolute;
+    top:0px;
+    left:-30px;
+}
+
+.top{
+    position:absolute;
+    top:-60px;
+    left:0px;
+}
+
+.right{
+    position:absolute;
+    top:0px;
+    left:30px;
+}
+
+.bottom{
+    position:absolute;
+    top:60px;
+    left:0px;
+}

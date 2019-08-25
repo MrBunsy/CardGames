@@ -37,6 +37,14 @@
 
 .tricks{
     grid-area: middle;
-    min-width:300px;
-    min-height:300px;
+    /* min-width:300px;
+    min-height:300px; */
+    padding: 150px 100px 200px 200px
+}
+
+
+.tricks.centre{
+    width:1px;
+    height:1px;
+    margin: 50%;
 }
