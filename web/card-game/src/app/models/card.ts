@@ -1,13 +1,15 @@
 
-export enum Suit {
-    Club = "C",
-    Diamond = "D",
-    Heart = "H",
-    Spade = "S"
-}
+// export enum Suit {
+//     Club = "C",
+//     Diamond = "D",
+//     Heart = "H",
+//     Spade = "S"
+// }
 //note, turns out enums in typescript are shit. Actual JS of this enum: {Club: "C", Diamond: "D", Heart: "H", Spade: "S"}
 
-export const suitArray: Suit[] = [Suit.Club, Suit.Diamond, Suit.Heart, Suit.Spade];
+export type Suit = "Clubs" | "Diamonds" | "Hearts" | "Spades";
+
+export const suitArray: Suit[] = new Array<Suit>("Clubs", "Diamonds", "Hearts", "Spades");
 
 
 export class Card {
@@ -36,7 +38,7 @@ export class Card {
         if (!this.faceUp) {
             return "back";
         }
-        return this.valueLookup[this.value] + this.suit.toString();
+        return this.valueLookup[this.value] + this.suit.substring(0, 1);
     }
 
     /**
@@ -45,11 +47,9 @@ export class Card {
      */
     public static getSuitCount(cards: Card[]): Map<Suit, number> {
         let count = new Map<Suit, number>();
-        count[Suit.Club] = 0;
-        count[Suit.Diamond] = 0;
-        count[Suit.Heart] = 0;
-        count[Suit.Spade] = 0;
-
+        for (let suit of suitArray) {
+            count[suit] = 0;
+        }
         for (let card of cards) {
             count[card.suit]++;
         }
@@ -59,10 +59,9 @@ export class Card {
 
     public static getCardsInSuits(cards: Card[]): Map<Suit, Card[]> {
         let sortedCards = new Map<Suit, Card[]>();
-        sortedCards[Suit.Club] = [];
-        sortedCards[Suit.Diamond] = [];
-        sortedCards[Suit.Heart] = [];
-        sortedCards[Suit.Spade] = [];
+        for (let suit of suitArray) {
+            sortedCards[suit] = [];
+        }
 
         for (let card of cards) {
             sortedCards[card.suit].push(card);

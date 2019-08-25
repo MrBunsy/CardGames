@@ -100,7 +100,7 @@ export class Moron implements DeclarationWhistPlayer {
      */
     public chooseTrumps(): Observable<Suit> {
 
-        let trumps = Suit.Club;
+        let trumps: Suit = "Clubs";
         let highestCount = 0;
 
         //choose suit with most cards

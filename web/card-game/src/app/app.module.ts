@@ -8,6 +8,7 @@ import { CardComponent } from './components/card/card.component';
 import { HandComponent } from './components/hand/hand.component';
 import { PlayBotsComponent } from './components/play-bots/play-bots.component';
 import { AboutComponent } from './components/about/about.component';
+import { PlayAgainstBotsComponent } from './components/play-against-bots/play-against-bots.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { AboutComponent } from './components/about/about.component';
     CardComponent,
     HandComponent,
     PlayBotsComponent,
-    AboutComponent
+    AboutComponent,
+    PlayAgainstBotsComponent
   ],
   imports: [
     BrowserModule,
