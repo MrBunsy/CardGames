@@ -23,13 +23,13 @@ export class DeckService {
 
   public suitValue(suit: Suit): number {
     switch (suit) {
-      case Suit.Club:
+      case "Clubs":
         return 0;
-      case Suit.Diamond:
+      case "Diamonds":
         return 1;
-      case Suit.Heart:
+      case "Hearts":
         return 2;
-      case Suit.Spade:
+      case "Spades":
         return 3;
     }
   }

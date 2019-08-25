@@ -1,7 +1,8 @@
 import { Card, Suit, suitArray } from './card';
 import { Game } from './game';
-import { Observable, of } from 'rxjs';
-import { Bid, CardInTrick } from './declaration-whist';
+import { Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { Bid, CardInTrick, Trumps } from './declaration-whist';
+import { tap } from 'rxjs/operators';
 
 export interface CardPlayer {
     dealHand(cards: Card[]);
@@ -22,6 +23,12 @@ export interface DeclarationWhistPlayer extends CardPlayer {
     chooseTrumps(): Observable<Suit>;
 
     /**
+     * Trumps have been chosen
+     * @param trumps 
+     */
+    trumpsChosen(trumps: Trumps);
+
+    /**
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
@@ -30,24 +37,92 @@ export interface DeclarationWhistPlayer extends CardPlayer {
 
 export class LocalHuman implements DeclarationWhistPlayer {
 
-    public name: string;
+    //emitted when dealt a hand, and every time your hand changes
+    public cards$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
+
+    private cards: Card[];
+
+    //emitted when we need to bid
+    public validBids$: Subject<number[]> = new Subject<number[]>();
+    //emitted if we need to choose trumps
+    public chooseTrumps$: Subject<void> = new Subject<void>();
+    //emitted when we need to play a card
+    public validCardsToPlay$: Subject<Card[]> = new Subject<Card[]>();
+
+    private trumps: Suit;
+
+    constructor(
+        public name: string,
+        private bid$: Observable<number>,
+        private trumps$: Observable<Suit>,
+        private playCard$: Observable<Card>
+    ) { }
 
     dealHand(cards: Card[]) {
-        // throw new Error("Method not implemented.");
+        this.cards$.next(cards);
+        this.cards = cards;
     }
+
     declareBid(otherEstimates: Bid[]): Observable<number> {
-        throw new Error("Method not implemented.");
+
+        let validBids = [];
+        let totalTrickEstimates = 0;
+        if (otherEstimates.length == 3) {
+            totalTrickEstimates = otherEstimates.map(estimate => estimate[1]).reduce((sum, current) => sum + current);
+        }
+
+        //must ensure we choose a valid count
+
+        for (let i = 0; i < 13; i++) {
+            if (i + totalTrickEstimates != 13) {
+                validBids.push(i);
+            }
+        }
+        this.validBids$.next(validBids);
+        return this.bid$;
     }
+
     chooseTrumps(): Observable<Suit> {
-        throw new Error("Method not implemented.");
+        this.chooseTrumps$.next();
+
+        return this.trumps$;
     }
+
+    trumpsChosen(trumps: Trumps) {
+        this.trumps = trumps.suit;
+    }
+
+    private removeCard(card: Card) {
+        let index: number = this.cards.findIndex(thisCard => thisCard.suit == card.suit && thisCard.value == card.value);
+        this.cards.splice(index, 1);
+        this.cards$.next(this.cards);
+    }
+
     playCard(trick: CardInTrick[]): Observable<Card> {
-        throw new Error("Method not implemented.");
+        let validCards = this.cards.slice();
+        if (trick.length > 0) {
+            //suit to follow
+            let followSuit = trick[0].card.suit;
+            let suitCount = Card.getCardsInSuits(this.cards);
+
+            if (suitCount[followSuit].length > 0) {
+                //have to follow suit
+                validCards = suitCount[followSuit];
+            }
+        }
+
+        this.validCardsToPlay$.next(validCards);
+        return this.playCard$.pipe(
+            tap(cardPlayed => this.removeCard(cardPlayed))
+        );
     }
 
 
 }
 
+/**
+ * The Moron will play valid, but random, cards and choices
+ */
 export class Moron implements DeclarationWhistPlayer {
 
     private cards: Card[];
@@ -58,6 +133,9 @@ export class Moron implements DeclarationWhistPlayer {
         this.cards = cards;
     }
 
+    public trumpsChosen(trumps: Trumps) {
+        //moron is too dumb to care
+    }
 
 
     /**

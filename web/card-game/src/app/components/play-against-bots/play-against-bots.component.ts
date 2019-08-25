@@ -1,35 +1,36 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Moron, LocalHuman, DeclarationWhistPlayer } from 'src/app/models/player';
-import { LocalDeclarationWhist, DeclarationWhistGameEvents } from 'src/app/models/declaration-whist';
 import { DeckService } from 'src/app/services/deck.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { DeclarationWhistGameEvents, LocalDeclarationWhist } from 'src/app/models/declaration-whist';
+import { DeclarationWhistPlayer, LocalHuman, Moron } from 'src/app/models/player';
+import { Suit, Card } from 'src/app/models/card';
+import { HumanPlayerService } from 'src/app/services/human-player.service';
 
 @Component({
-  selector: 'app-play-bots',
-  templateUrl: './play-bots.component.html',
-  styleUrls: ['./play-bots.component.css']
+  selector: 'app-play-against-bots',
+  templateUrl: './play-against-bots.component.html',
+  styleUrls: ['./play-against-bots.component.css']
 })
-export class PlayBotsComponent implements OnInit, OnDestroy {
-
+export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
 
   public players: DeclarationWhistPlayer[];
-  public player: LocalHuman;
+  // public player: LocalHuman;
   public game: LocalDeclarationWhist;
 
   public log: DeclarationWhistGameEvents[] = [];
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private deckService: DeckService) {
 
-    // this.player = new LocalHuman();
+  constructor(private deckService: DeckService, private player: HumanPlayerService) {
+
+
 
     this.players = [
       new Moron("Ted"),
       new Moron("Bill"),
       new Moron("Steve"),
-      // this.player
-      new Moron("Bob")
+      this.player.getPlayer()
     ];
 
     this.game = new LocalDeclarationWhist(this.players, this.deckService.getDeck(), 0);
@@ -37,7 +38,6 @@ export class PlayBotsComponent implements OnInit, OnDestroy {
     this.subscriptions.push(this.game.gameEvents.subscribe(event => this.log.push(event)));
 
     this.game.start();
-
   }
 
   ngOnInit() {
