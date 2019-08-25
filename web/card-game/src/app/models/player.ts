@@ -2,7 +2,7 @@ import { Card, Suit, suitArray } from './card';
 import { Game } from './game';
 import { Observable, of, ReplaySubject, Subject } from 'rxjs';
 import { Bid, CardInTrick, Trumps } from './declaration-whist';
-import { tap } from 'rxjs/operators';
+import { tap, map } from 'rxjs/operators';
 
 export interface CardPlayer {
     dealHand(cards: Card[]);
@@ -11,6 +11,10 @@ export interface CardPlayer {
 export interface DeclarationWhistPlayer extends CardPlayer {
 
     name: string;
+
+    // getCards(): Observable<Card[]>;
+    // getBid(): Observable<number>;
+
     /**
      * Get our estimated number of tricks
      * @param otherEstimates estimates of the preceeding players, in order. array of tuples of player index and esimate [(0, 13), (1,10)]
@@ -21,12 +25,6 @@ export interface DeclarationWhistPlayer extends CardPlayer {
      * This player's bid was highest, they get to choose trumps
      */
     chooseTrumps(): Observable<Suit>;
-
-    /**
-     * Trumps have been chosen
-     * @param trumps 
-     */
-    trumpsChosen(trumps: Trumps);
 
     /**
      * Get our card for a trick
@@ -42,6 +40,8 @@ export class LocalHuman implements DeclarationWhistPlayer {
 
     private cards: Card[];
 
+    private bidOutput$: ReplaySubject<number> = new ReplaySubject<number>(1);
+
     //emitted when we need to bid
     public validBids$: Subject<number[]> = new Subject<number[]>();
     //emitted if we need to choose trumps
@@ -53,7 +53,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
 
     constructor(
         public name: string,
-        private bid$: Observable<number>,
+        private bidInput$: Observable<number>,
         private trumps$: Observable<Suit>,
         private playCard$: Observable<Card>
     ) { }
@@ -61,6 +61,14 @@ export class LocalHuman implements DeclarationWhistPlayer {
     dealHand(cards: Card[]) {
         this.cards$.next(cards);
         this.cards = cards;
+    }
+
+    // public getCards(): Observable<Card[]> {
+    //     return this.cards$.asObservable();
+    // }
+
+    public getBid(): Observable<number>{
+        return this.bidOutput$.asObservable();
     }
 
     declareBid(otherEstimates: Bid[]): Observable<number> {
@@ -79,18 +87,20 @@ export class LocalHuman implements DeclarationWhistPlayer {
             }
         }
         this.validBids$.next(validBids);
-        return this.bid$;
+        return this.bidInput$.pipe(
+            tap(bid => this.bidOutput$.next(bid))
+        );
     }
 
+    /**
+     * Used by the game
+     */
     chooseTrumps(): Observable<Suit> {
         this.chooseTrumps$.next();
 
         return this.trumps$;
     }
 
-    trumpsChosen(trumps: Trumps) {
-        this.trumps = trumps.suit;
-    }
 
     private removeCard(card: Card) {
         let index: number = this.cards.findIndex(thisCard => thisCard.equals(card));
@@ -126,17 +136,26 @@ export class LocalHuman implements DeclarationWhistPlayer {
 export class Moron implements DeclarationWhistPlayer {
 
     private cards: Card[];
+    private cards$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
 
     constructor(public name: string) { }
 
     public dealHand(cards: Card[]) {
         this.cards = cards;
+        this.cards$.next(cards);
     }
 
     public trumpsChosen(trumps: Trumps) {
         //moron is too dumb to care
     }
 
+    // public getCards(): Observable<Card[]> {
+    //     return this.cards$.asObservable();
+    //     // .pipe(
+    //     //     //replace with face-down cards
+    //     //     map(cards => cards.map(card => new Card(null, 0, false)))
+    //     // );
+    // }
 
     /**
      * in ideal circumstances, how many tricks do we think we can win?
@@ -221,7 +240,7 @@ export class Moron implements DeclarationWhistPlayer {
         let card = this.cards[cardIndex];
 
         this.cards.splice(cardIndex, 1);
-
+        this.cards$.next(this.cards);
         return of(card);
 
     }

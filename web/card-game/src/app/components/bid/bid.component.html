@@ -1,7 +1,4 @@
-<!-- <select class="form-control" [(ngModel)]="selectedBid">
-  <option *ngFor="let validBid of validBids">{{validBid}}</option>
-</select> -->
-
+<h3>Please select a bid:</h3>
 <div class="hand">
   <div *ngFor="let validBid of validBids" class="bid" (click)="chooseBid(validBid)">
     {{validBid}}

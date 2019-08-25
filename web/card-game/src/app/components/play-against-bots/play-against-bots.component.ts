@@ -6,6 +6,7 @@ import { DeclarationWhistPlayer, LocalHuman, Moron } from 'src/app/models/player
 import { Suit, Card } from 'src/app/models/card';
 import { HumanPlayerService, PlayerState } from 'src/app/services/human-player.service';
 import { tap } from 'rxjs/operators';
+import { GameService } from 'src/app/services/game.service';
 
 @Component({
   selector: 'app-play-against-bots',
@@ -16,7 +17,7 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
 
   public players: DeclarationWhistPlayer[];
   // public player: LocalHuman;
-  public game: LocalDeclarationWhist;
+  // public game: LocalDeclarationWhist;
 
   public log: DeclarationWhistGameEvents[] = [];
 
@@ -27,9 +28,10 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
   public playerState$: Observable<PlayerState>;
   public playerCards$: Observable<Card[]>;
   public validBids$: Observable<number[]>;
+  
 
 
-  constructor(private deckService: DeckService, private player: HumanPlayerService) {
+  constructor(private deckService: DeckService, private player: HumanPlayerService, private game: GameService) {
 
 
 
@@ -44,9 +46,11 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
     this.playerCards$ = this.player.cards$.asObservable();
     this.validBids$ = this.player.validBids$.asObservable();
 
-    this.game = new LocalDeclarationWhist(this.players, this.deckService.getDeck(), 0);
+    this.game.createDeclarationWhist(this.players);
 
-    this.subscriptions.push(this.game.gameEvents.subscribe(event => this.log.push(event)));
+    this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event)));
+
+    this.trumps$ = this.game.getTrumps();
 
     this.game.start();
   }

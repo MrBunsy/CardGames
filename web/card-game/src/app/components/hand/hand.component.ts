@@ -20,6 +20,8 @@ export class HandComponent implements OnInit, OnChanges {
   @Input() active: boolean = false;
   //if provided, specific cards are highlighted and only those can be played
   @Input() validPlays: Card[] = null;
+  @Input() compact: boolean = true;
+  @Input() vertical: boolean = false;
 
   @Output() cardChosen: EventEmitter<Card> = new EventEmitter<Card>();
 

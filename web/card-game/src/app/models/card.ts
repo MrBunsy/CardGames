@@ -14,7 +14,7 @@ export const suitArray: Suit[] = new Array<Suit>("Clubs", "Diamonds", "Hearts", 
 
 export class Card {
 
-    private valueLookup: string[] = ["0",
+    private valueLookup: string[] = ["",//little hack, value 0 just shows a blank card with the suit
         "1",
         "2",
         "3",

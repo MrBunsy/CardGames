@@ -41,6 +41,7 @@ class PlayerInfo {
     public bid: number = null;
     public tricksWon: number = 0;
     public score: number = 0;
+    public cards: number = 13;
 
     constructor(public player: DeclarationWhistPlayer, public index: number) { }
 }
@@ -87,6 +88,8 @@ export class LocalDeclarationWhist { //implements IGame
         }
 
     }
+
+
 
     public start() {
         this.deck.deal(this.players);
@@ -147,11 +150,13 @@ export class LocalDeclarationWhist { //implements IGame
      */
     private playCard(card: CardInTrick) {
         console.log(card.player.name + " played " + card.card.toString());
-        this.gameEvents.next({ type: "CardPlayed", event: card })
+
+        this.playerInfos[card.playerIndex].cards--;
 
         let currentTrick = this.tricks[this.tricks.length - 1];
-
         currentTrick.cards.push(card);
+
+        this.gameEvents.next({ type: "CardPlayed", event: card })
 
         if (currentTrick.cards.length < 4) {
             //more cards to play
@@ -250,5 +255,13 @@ export class LocalDeclarationWhist { //implements IGame
         }
 
         return players;
+    }
+
+
+
+    //bellow are useful gubbins for the GUI
+
+    public getPlayerCardCounts(): number[] {
+        return this.playerInfos.map(info => info.cards);
     }
 }

@@ -48,7 +48,7 @@ export class HumanPlayerService implements OnDestroy {
     this.player.validBids$.asObservable().pipe(first()).subscribe(validBids => this.needToChooseBid(validBids));
 
     //and trumps
-    this.player.chooseTrumps$.asObservable().pipe(first()).subscribe(() => this.chooseTrumps$.next(true));
+    this.player.chooseTrumps$.asObservable().pipe(first()).subscribe(() => this.needToChooseTrumps());
 
     this.playerSubscriptions.push(this.player.validCardsToPlay$.subscribe(validCards => this.needToChooseCard(validCards)));
 
@@ -65,6 +65,7 @@ export class HumanPlayerService implements OnDestroy {
 
   public needToChooseTrumps() {
     this.playerState$.next("ChoosingTrumps");
+    this.chooseTrumps$.next(true);
   }
 
   public needToChooseCard(validCards: Card[]) {

@@ -12,6 +12,11 @@ import { PlayAgainstBotsComponent } from './components/play-against-bots/play-ag
 import { BidComponent } from './components/bid/bid.component';
 import { FormsModule } from '@angular/forms';
 import { LocalPlayerHandComponent } from './components/local-player-hand/local-player-hand.component';
+import { ChooseTrumpsComponent } from './components/choose-trumps/choose-trumps.component';
+import { RemotePlayerHandComponent } from './components/remote-player-hand/remote-player-hand.component';
+import { TrumpTrackerComponent } from './components/trump-tracker/trump-tracker.component';
+import { TricksWonTrackerComponent } from './components/tricks-won-tracker/tricks-won-tracker.component';
+import { ActiveTrickComponent } from './components/active-trick/active-trick.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +28,12 @@ import { LocalPlayerHandComponent } from './components/local-player-hand/local-p
     AboutComponent,
     PlayAgainstBotsComponent,
     BidComponent,
-    LocalPlayerHandComponent
+    LocalPlayerHandComponent,
+    ChooseTrumpsComponent,
+    RemotePlayerHandComponent,
+    TrumpTrackerComponent,
+    TricksWonTrackerComponent,
+    ActiveTrickComponent
   ],
   imports: [
     BrowserModule,

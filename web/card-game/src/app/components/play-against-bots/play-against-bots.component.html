@@ -1,11 +1,24 @@
+<div class="table">
+  <div class="trumpTracker"><trump-tracker></trump-tracker></div>
+  <div class="topPlayer"><remote-player-hand [player]="players[1]"></remote-player-hand></div>
+  <div class="leftPlayer"><remote-player-hand [player]="players[0]" [vertical]="true"></remote-player-hand></div>
+  <div class="tricks"> Tricks area</div>
+  <div class="rightPlayer"><remote-player-hand [player]="players[2]" [vertical]="true"></remote-player-hand></div>
+  <div class="bottomPlayer"><local-player-hand></local-player-hand></div>
+</div>
+
 <ng-container *ngIf="playerState$ | async as state">
 
   State: {{state}}
 
-  <bid *ngIf="state == 'ChoosingBid'" [validBids]="validBids$ | async"></bid>
 
   <div>
     <!-- <hand [cards]="playerCards$ | async"></hand> -->
-    <local-player-hand></local-player-hand>
+    
   </div>
+
+  <bid *ngIf="state == 'ChoosingBid'" [validBids]="validBids$ | async"></bid>
+  <choose-trumps *ngIf="state == 'ChoosingTrumps'"></choose-trumps>
+
+
 </ng-container>
