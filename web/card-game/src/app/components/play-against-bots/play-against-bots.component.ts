@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DeckService } from 'src/app/services/deck.service';
-import { Subscription, Subject } from 'rxjs';
+import { Subscription, Subject, Observable } from 'rxjs';
 import { DeclarationWhistGameEvents, LocalDeclarationWhist } from 'src/app/models/declaration-whist';
 import { DeclarationWhistPlayer, LocalHuman, Moron } from 'src/app/models/player';
 import { Suit, Card } from 'src/app/models/card';
-import { HumanPlayerService } from 'src/app/services/human-player.service';
+import { HumanPlayerService, PlayerState } from 'src/app/services/human-player.service';
+import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-play-against-bots',
@@ -21,6 +22,12 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
 
+  public showBidSelection: boolean = false;
+  public hand: Card[] = [];
+  public playerState$: Observable<PlayerState>;
+  public playerCards$: Observable<Card[]>;
+  public validBids$: Observable<number[]>;
+
 
   constructor(private deckService: DeckService, private player: HumanPlayerService) {
 
@@ -32,6 +39,10 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
       new Moron("Steve"),
       this.player.getPlayer()
     ];
+
+    this.playerState$ = this.player.playerState$.asObservable().pipe(tap(state => console.log(state)));
+    this.playerCards$ = this.player.cards$.asObservable();
+    this.validBids$ = this.player.validBids$.asObservable();
 
     this.game = new LocalDeclarationWhist(this.players, this.deckService.getDeck(), 0);
 

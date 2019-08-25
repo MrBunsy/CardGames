@@ -96,7 +96,7 @@ export class LocalDeclarationWhist { //implements IGame
     }
 
     private playerBid(bid: Bid) {
-        console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid);
+        console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid.bid);
         this.playerInfos[bid.playerIndex].bid = bid.bid;
         this.gameEvents.next({ type: "Bid", event: bid });
         this.bids.push(bid);

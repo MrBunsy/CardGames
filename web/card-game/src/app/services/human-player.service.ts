@@ -1,9 +1,11 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Subject, ReplaySubject, Observable, Subscription } from 'rxjs';
+import { Subject, ReplaySubject, Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { Suit, Card } from '../models/card';
 import { LocalHuman } from '../models/player';
 import { CardInTrick } from '../models/declaration-whist';
 import { first } from 'rxjs/operators';
+
+export type PlayerState = "Waiting" | "ChoosingBid" | "ChoosingTrumps" | "ChoosingCard";
 
 @Injectable({
   providedIn: 'root'
@@ -29,6 +31,8 @@ export class HumanPlayerService implements OnDestroy {
   //emitted when we need to play a card
   public validCardsToPlay$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
 
+  public playerState$: BehaviorSubject<PlayerState> = new BehaviorSubject<PlayerState>("Waiting");
+
 
   private player: LocalHuman;
 
@@ -39,32 +43,55 @@ export class HumanPlayerService implements OnDestroy {
     this.player = new LocalHuman(name, this.bid$, this.trumps$, this.playCard$);
 
     //TODO clear subs at end of a match?
-    // this.playerSubscriptions.push(this.player.cards$.asObservable().subscribe(cards => this.cards$.next(cards)));
 
     //parrot out the bids
-    this.player.validBids$.asObservable().pipe(first()).subscribe(validBids => this.validBids$.next(validBids));
+    this.player.validBids$.asObservable().pipe(first()).subscribe(validBids => this.needToChooseBid(validBids));
 
     //and trumps
     this.player.chooseTrumps$.asObservable().pipe(first()).subscribe(() => this.chooseTrumps$.next(true));
 
-    this.playerSubscriptions.push(this.player.validCardsToPlay$.subscribe(validCards => this.validCardsToPlay$.next(validCards)));
+    this.playerSubscriptions.push(this.player.validCardsToPlay$.subscribe(validCards => this.needToChooseCard(validCards)));
 
     this.cards$ = this.player.cards$;
 
     return this.player;
   }
 
-  public chooseBid(bid: number) {
-    this.bid$.next(bid);
+  public needToChooseBid(validBids: number[]) {
+    this.playerState$.next("ChoosingBid");
+    this.validBids$.next(validBids)
+
   }
 
-  public chooseTrumps(trumps: Suit) {
+  public needToChooseTrumps() {
+    this.playerState$.next("ChoosingTrumps");
+  }
+
+  public needToChooseCard(validCards: Card[]) {
+    this.playerState$.next("ChoosingCard");
+    this.validCardsToPlay$.next(validCards);
+
+  }
+
+  public chosenBid(bid: number) {
+    this.playerState$.next("Waiting");
+    this.bid$.next(bid);
+
+  }
+
+  public chosenTrumps(trumps: Suit) {
+    this.playerState$.next("Waiting");
     this.trumps$.next(trumps);
+
   }
 
   public playCard(card: Card) {
-    this.validCardsToPlay$.next(null);
-    this.playCard$.next(card);
+    if (this.playerState$.value == "ChoosingCard") {
+      this.playerState$.next("Waiting");
+      this.playCard$.next(card);
+
+
+    }
   }
 
   ngOnDestroy(): void {

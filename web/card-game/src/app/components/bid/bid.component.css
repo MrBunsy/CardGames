@@ -1,0 +1,21 @@
+.bid{
+    width:50px;
+    height:70px;
+    margin: 2px;
+	padding: 5px;
+    border-radius: 5px;
+    border:1px solid black;
+	vertical-align: initial;
+    box-sizing: initial;
+    display: inline-block; 
+    cursor: pointer;
+    text-align: center;
+    line-height: 70px;
+    font-size: 30pt;
+    font-family: sans-serif;
+}
+
+
+.bid:hover{
+    background:yellow;
+}

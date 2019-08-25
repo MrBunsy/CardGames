@@ -70,4 +70,8 @@ export class Card {
         return sortedCards;
     }
 
+    public equals(other: Card): boolean {
+        return other.value == this.value && other.suit == this.suit;
+    }
+
 }

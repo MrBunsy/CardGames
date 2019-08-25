@@ -9,6 +9,9 @@ import { HandComponent } from './components/hand/hand.component';
 import { PlayBotsComponent } from './components/play-bots/play-bots.component';
 import { AboutComponent } from './components/about/about.component';
 import { PlayAgainstBotsComponent } from './components/play-against-bots/play-against-bots.component';
+import { BidComponent } from './components/bid/bid.component';
+import { FormsModule } from '@angular/forms';
+import { LocalPlayerHandComponent } from './components/local-player-hand/local-player-hand.component';
 
 @NgModule({
   declarations: [
@@ -18,11 +21,14 @@ import { PlayAgainstBotsComponent } from './components/play-against-bots/play-ag
     HandComponent,
     PlayBotsComponent,
     AboutComponent,
-    PlayAgainstBotsComponent
+    PlayAgainstBotsComponent,
+    BidComponent,
+    LocalPlayerHandComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

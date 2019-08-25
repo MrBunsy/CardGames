@@ -73,7 +73,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
 
         //must ensure we choose a valid count
 
-        for (let i = 0; i < 13; i++) {
+        for (let i = 0; i <= 13; i++) {
             if (i + totalTrickEstimates != 13) {
                 validBids.push(i);
             }
@@ -93,7 +93,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
     }
 
     private removeCard(card: Card) {
-        let index: number = this.cards.findIndex(thisCard => thisCard.suit == card.suit && thisCard.value == card.value);
+        let index: number = this.cards.findIndex(thisCard => thisCard.equals(card));
         this.cards.splice(index, 1);
         this.cards$.next(this.cards);
     }

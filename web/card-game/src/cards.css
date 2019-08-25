@@ -14,7 +14,7 @@ img.card {
 	padding: 0;
 	margin: 0;
 }
-.active-hand img.card { 
+.active-hand img.card.clickable { 
 	cursor: pointer;
 }
 
@@ -60,7 +60,12 @@ img.card {
 	margin-left: -52px;
 	padding-top: 10px;
 }
-.hhand-compact.active-hand img.card:hover { 
+/* .hhand-compact.active-hand img.card:hover { 
+	padding-top: 0px;
+	padding-bottom: 10px;
+} */
+
+.hhand-compact.active-hand img.card.highlight { 
 	padding-top: 0px;
 	padding-bottom: 10px;
 }

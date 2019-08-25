@@ -1,0 +1,1 @@
+<hand [cards]="player.cards$ | async" [active]="(player.playerState$ | async) == 'ChoosingCard'" [validPlays]="player.validCardsToPlay$ | async" (cardChosen)="cardChosen($event)"></hand>

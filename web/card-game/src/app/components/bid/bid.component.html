@@ -1,0 +1,9 @@
+<!-- <select class="form-control" [(ngModel)]="selectedBid">
+  <option *ngFor="let validBid of validBids">{{validBid}}</option>
+</select> -->
+
+<div class="hand">
+  <div *ngFor="let validBid of validBids" class="bid" (click)="chooseBid(validBid)">
+    {{validBid}}
+  </div>
+</div>

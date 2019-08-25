@@ -1,3 +1,11 @@
-<p>
-  play-against-bots works!
-</p>
+<ng-container *ngIf="playerState$ | async as state">
+
+  State: {{state}}
+
+  <bid *ngIf="state == 'ChoosingBid'" [validBids]="validBids$ | async"></bid>
+
+  <div>
+    <!-- <hand [cards]="playerCards$ | async"></hand> -->
+    <local-player-hand></local-player-hand>
+  </div>
+</ng-container>
