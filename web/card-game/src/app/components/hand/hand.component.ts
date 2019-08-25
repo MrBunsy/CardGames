@@ -53,7 +53,7 @@ export class HandComponent implements OnInit, OnChanges {
       let clickable = false;
       let highlighted = false;
 
-      //bodge so all cards appear unique for the don't-break-angular don't-replay-the-array bodge
+      //bodge so all cards appear unique for the don't-break-angular don't-replace-the-array bodge
       if (!card.faceUp) {
         card.value = i;
         i++;
