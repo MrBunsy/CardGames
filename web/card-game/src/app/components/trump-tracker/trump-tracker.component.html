@@ -1,6 +1,6 @@
 <ng-container *ngIf="suitCard$ | async as card">
-  <div class="trumpText">
-    Trumps
-  </div>
   <card [card]="card"></card>
+  <div>
+    Chosen by {{chooser$ | async}}
+  </div>
 </ng-container>

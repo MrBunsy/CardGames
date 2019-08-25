@@ -12,11 +12,17 @@ import { tap, map } from 'rxjs/operators';
 export class TrumpTrackerComponent implements OnInit {
 
   public suitCard$: Observable<Card>;
+  public chooser$: Observable<string>;
 
   constructor(private game: GameService) {
-    this.suitCard$ = this.game.getTrumps().pipe(
+    this.suitCard$ = this.game.getTrumpsEvent().pipe(
+      map(event => event.suit),
       map(suit => new Card(suit, 0))
     );
+
+    this.chooser$ = this.game.getTrumpsEvent().pipe(
+      map(event => event.player.name)
+    )
   }
 
   ngOnInit() {

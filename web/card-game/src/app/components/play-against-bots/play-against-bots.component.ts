@@ -50,12 +50,11 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event)));
 
-    this.trumps$ = this.game.getTrumps();
-
-    this.game.start();
+    
   }
 
   ngOnInit() {
+    this.game.start();
   }
 
   ngOnDestroy(): void {

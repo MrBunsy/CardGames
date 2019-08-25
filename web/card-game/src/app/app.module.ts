@@ -17,6 +17,7 @@ import { RemotePlayerHandComponent } from './components/remote-player-hand/remot
 import { TrumpTrackerComponent } from './components/trump-tracker/trump-tracker.component';
 import { TricksWonTrackerComponent } from './components/tricks-won-tracker/tricks-won-tracker.component';
 import { ActiveTrickComponent } from './components/active-trick/active-trick.component';
+import { BidTrackerComponent } from './components/bid-tracker/bid-tracker.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { ActiveTrickComponent } from './components/active-trick/active-trick.com
     RemotePlayerHandComponent,
     TrumpTrackerComponent,
     TricksWonTrackerComponent,
-    ActiveTrickComponent
+    ActiveTrickComponent,
+    BidTrackerComponent
   ],
   imports: [
     BrowserModule,

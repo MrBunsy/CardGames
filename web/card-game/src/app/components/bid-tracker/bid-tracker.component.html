@@ -1,0 +1,6 @@
+<div>
+    <ng-container *ngIf="bid$ | async as bid">Bid {{bid}}</ng-container>
+</div>
+<div>
+        Won <ng-container *ngIf="won$ | async as won; else wonNone">{{won}}</ng-container><ng-template #wonNone>0</ng-template>
+</div>

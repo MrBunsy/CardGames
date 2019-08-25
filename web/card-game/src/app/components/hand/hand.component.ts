@@ -41,7 +41,7 @@ export class HandComponent implements OnInit, OnChanges {
   }
 
   private reconfigure() {
-    this.drawableCards = [];
+    let newDrawableCards = [];
     let cards = this.deckService.sort(this.cards.slice());
 
     for (let card of cards) {
@@ -60,8 +60,10 @@ export class HandComponent implements OnInit, OnChanges {
         clickable = this.active;
       }
 
-      this.drawableCards.push(new DrawableCard(card, clickable, highlighted));
+      newDrawableCards.push(new DrawableCard(card, clickable, highlighted));
     }
+
+    this.drawableCards = newDrawableCards;
   }
 
   ngOnInit() {

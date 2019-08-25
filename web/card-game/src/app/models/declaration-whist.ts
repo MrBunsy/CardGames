@@ -78,7 +78,7 @@ export class LocalDeclarationWhist { //implements IGame
     private trumps: Suit;
 
     // public playerBids: ReplaySubject<Bid> = new ReplaySubject<Bid>();
-    public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(1);
+    public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
 
     constructor(public players: DeclarationWhistPlayer[], private deck: Deck, private bidFirst: number) {
         let i = 0;
@@ -210,12 +210,13 @@ export class LocalDeclarationWhist { //implements IGame
             winner = highestInSuit.player;
         }
 
+        currentTrick.winner = winner;
+        this.getPlayerInfo(winner).tricksWon++;
+
         console.log(winner.name + " won the trick")
         this.gameEvents.next({ type: "TrickWon", event: { player: winner, playerIndex: this.players.indexOf(winner) } });
 
         if (this.tricks.length < 13) {
-            currentTrick.winner = winner;
-            this.getPlayerInfo(winner).tricksWon++;
             this.startTrick(winner);
         } else {
             //round ended!
@@ -263,5 +264,9 @@ export class LocalDeclarationWhist { //implements IGame
 
     public getPlayerCardCounts(): number[] {
         return this.playerInfos.map(info => info.cards);
+    }
+
+    public getPlayerTrickCounts(): number[] {
+        return this.playerInfos.map(info => info.tricksWon);
     }
 }
