@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, Input, ViewEncapsulation, OnChanges, SimpleChanges } from '@angular/core';
 import { DeckService } from 'src/app/services/deck.service';
 import { Card } from 'src/app/models/card';
 
@@ -11,7 +11,8 @@ import { Card } from 'src/app/models/card';
   styleUrls: ['./card.component.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class CardComponent implements OnInit {
+export class CardComponent implements OnInit, OnChanges {
+
 
   public image: string;
   @Input() card: Card;
@@ -20,8 +21,16 @@ export class CardComponent implements OnInit {
 
   }
 
-  ngOnInit() {
+  private setImage() {
     this.image = this.deck.getStyle() + "/" + this.card.toString() + ".svg";
+  }
+
+  ngOnInit() {
+    this.setImage();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    this.setImage();
   }
 
 }

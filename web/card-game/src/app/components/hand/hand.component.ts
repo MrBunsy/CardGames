@@ -59,11 +59,27 @@ export class HandComponent implements OnInit, OnChanges {
         //all cards could be active
         clickable = this.active;
       }
+      // TODO finish faffage to stop angular making everything vanish briefly whenever the cards change
 
       newDrawableCards.push(new DrawableCard(card, clickable, highlighted));
+      // let index = this.drawableCards.findIndex(drawable => drawable.card.equals(card));
+      // if (index >= 0) {
+      //   this.drawableCards[index].clickable = clickable;
+      //   this.drawableCards[index].highlight = highlighted;
+      // }else{
+      //   this.drawableCards.push(new DrawableCard(card, clickable, highlighted));
+      // }
     }
-
+    // console.log(JSON.stringify(newDrawableCards))
     this.drawableCards = newDrawableCards;
+
+    // for(let drawable of this.drawableCards){
+    //   let index = this.cards.findIndex(card => card.equals(drawable.card))
+    //   if(index < 0){
+    //     //this card has gone
+    //     this.drawableCards.splice(index,1);
+    //   }
+    // }
   }
 
   ngOnInit() {

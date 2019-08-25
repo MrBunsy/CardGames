@@ -1,7 +1,7 @@
 import { DeclarationWhistPlayer } from './player';
 import { Deck } from './deck';
 import { first } from 'rxjs/operators';
-import { ReplaySubject } from 'rxjs';
+import { ReplaySubject, Observable } from 'rxjs';
 import { Suit, Card } from './card';
 
 //long term plan to make this suitable for multiple games. for now, just write for declaration whist and tease apart later
@@ -46,10 +46,10 @@ class PlayerInfo {
     constructor(public player: DeclarationWhistPlayer, public index: number) { }
 }
 
-class Trick {
+export class Trick {
     constructor(public openedBy: DeclarationWhistPlayer) { }
     public cards: CardInTrick[] = [];
-    public winner: DeclarationWhistPlayer;
+    public winner: DeclarationWhistPlayer = null;
 }
 
 
@@ -79,6 +79,8 @@ export class LocalDeclarationWhist { //implements IGame
 
     // public playerBids: ReplaySubject<Bid> = new ReplaySubject<Bid>();
     public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
+
+    private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
 
     constructor(public players: DeclarationWhistPlayer[], private deck: Deck, private bidFirst: number) {
         let i = 0;
@@ -144,6 +146,12 @@ export class LocalDeclarationWhist { //implements IGame
         player.playCard([]).pipe(first()).subscribe(card => this.playCard({ card: card, player: player, playerIndex: this.players.indexOf(player) }))
     }
 
+    private emitTrick() {
+        let currentTrick = this.tricks[this.tricks.length - 1];
+
+        this.trickEmitter.next({ cards: currentTrick.cards.slice(), openedBy: currentTrick.openedBy, winner: currentTrick.winner });
+    }
+
     /**
      * player is playing a card on a trick.
      * @param card 
@@ -155,6 +163,8 @@ export class LocalDeclarationWhist { //implements IGame
 
         let currentTrick = this.tricks[this.tricks.length - 1];
         currentTrick.cards.push(card);
+
+        this.emitTrick();
 
         this.gameEvents.next({ type: "CardPlayed", event: card })
 
@@ -268,5 +278,17 @@ export class LocalDeclarationWhist { //implements IGame
 
     public getPlayerTrickCounts(): number[] {
         return this.playerInfos.map(info => info.tricksWon);
+    }
+
+    public getCurrentTrick(): Trick {
+        if (this.tricks.length > 0) {
+            return this.tricks[this.tricks.length - 1];
+        } else {
+            return null;
+        }
+    }
+
+    public getTricks(): Observable<Trick> {
+        return this.trickEmitter.asObservable();
     }
 }

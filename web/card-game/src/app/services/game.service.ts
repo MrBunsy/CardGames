@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { DeckService } from './deck.service';
 import { DeclarationWhistPlayer } from '../models/player';
 import { Game } from '../models/game';
-import { LocalDeclarationWhist, DeclarationWhistGameEvents, Trumps, Bid } from '../models/declaration-whist';
+import { LocalDeclarationWhist, DeclarationWhistGameEvents, Trumps, Bid, Trick } from '../models/declaration-whist';
 import { Observable } from 'rxjs';
 import { map, filter, tap } from 'rxjs/operators';
 import { Suit } from '../models/card';
@@ -85,5 +85,10 @@ export class GameService {
       })
     )
   }
+
+  public getCurrentTrick(): Observable<Trick> {
+    return this.game.getTricks();
+  }
+
 
 }
