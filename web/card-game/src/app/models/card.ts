@@ -71,7 +71,7 @@ export class Card {
     }
 
     public equals(other: Card): boolean {
-        return other.value == this.value && other.suit == this.suit;
+        return other.value == this.value && other.suit == this.suit && other.faceUp == this.faceUp;
     }
 
 }

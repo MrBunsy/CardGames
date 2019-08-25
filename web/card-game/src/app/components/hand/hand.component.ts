@@ -40,13 +40,24 @@ export class HandComponent implements OnInit, OnChanges {
     }
   }
 
+  /**
+   * Note - if we just directly replace the drawable cards array, we get blips where there are no cards
+   * so some extra faff occurs here so we update elements in the array or add/remove as necessary
+   */
   private reconfigure() {
     let newDrawableCards = [];
     let cards = this.deckService.sort(this.cards.slice());
 
+    let i = 0;
     for (let card of cards) {
       let clickable = false;
       let highlighted = false;
+
+      //bodge so all cards appear unique for the don't-break-angular don't-replay-the-array bodge
+      if (!card.faceUp) {
+        card.value = i;
+        i++;
+      }
 
       if (this.validPlays != null) {
         //there are only some cards clicable
@@ -59,27 +70,28 @@ export class HandComponent implements OnInit, OnChanges {
         //all cards could be active
         clickable = this.active;
       }
-      // TODO finish faffage to stop angular making everything vanish briefly whenever the cards change
+      // faffage to stop angular making everything vanish briefly whenever the cards change
 
-      newDrawableCards.push(new DrawableCard(card, clickable, highlighted));
-      // let index = this.drawableCards.findIndex(drawable => drawable.card.equals(card));
-      // if (index >= 0) {
-      //   this.drawableCards[index].clickable = clickable;
-      //   this.drawableCards[index].highlight = highlighted;
-      // }else{
-      //   this.drawableCards.push(new DrawableCard(card, clickable, highlighted));
-      // }
+      // newDrawableCards.push(new DrawableCard(card, clickable, highlighted));
+      let index = this.drawableCards.findIndex(drawable => drawable.card.equals(card));
+      if (index >= 0) {
+        this.drawableCards[index].clickable = clickable;
+        this.drawableCards[index].highlight = highlighted;
+      } else {
+        this.drawableCards.push(new DrawableCard(card, clickable, highlighted));
+      }
+
+
     }
-    // console.log(JSON.stringify(newDrawableCards))
-    this.drawableCards = newDrawableCards;
 
-    // for(let drawable of this.drawableCards){
-    //   let index = this.cards.findIndex(card => card.equals(drawable.card))
-    //   if(index < 0){
-    //     //this card has gone
-    //     this.drawableCards.splice(index,1);
-    //   }
-    // }
+
+    for (let drawable of this.drawableCards) {
+      let index = this.cards.findIndex(card => card.equals(drawable.card))
+      if (index < 0) {
+        //this card has gone
+        this.drawableCards.splice(this.drawableCards.indexOf(drawable), 1);
+      }
+    }
   }
 
   ngOnInit() {
