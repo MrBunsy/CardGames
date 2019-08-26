@@ -2,7 +2,6 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, ReplaySubject, Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { Suit, Card } from '../models/card';
 import { LocalHuman, DeclarationWhistPlayer } from '../models/player';
-import { CardInTrick } from '../models/declaration-whist';
 import { first } from 'rxjs/operators';
 import { GameService } from './game.service';
 
