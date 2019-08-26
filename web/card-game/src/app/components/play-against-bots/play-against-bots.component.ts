@@ -39,7 +39,7 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
       new Moron("Ted"),
       new Moron("Bill"),
       new Moron("Steve"),
-      this.player.getPlayer()
+      this.player.createPlayer()
     ];
 
     this.playerState$ = this.player.playerState$.asObservable().pipe(tap(state => console.log(state)));

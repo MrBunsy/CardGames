@@ -1,11 +1,9 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
 import { DeclarationWhistPlayer } from '../models/player';
-import { Game } from '../models/game';
 import { LocalDeclarationWhist, DeclarationWhistGameEvents, Trumps, Bid, Trick, CardInTrick, EventInfo } from '../models/declaration-whist';
-import { Observable, Subscription, ReplaySubject, interval, of } from 'rxjs';
-import { map, filter, tap, delay, concatMap } from 'rxjs/operators';
-import { Suit } from '../models/card';
+import { Observable, Subscription, ReplaySubject, of } from 'rxjs';
+import { map, filter, delay, concatMap } from 'rxjs/operators';
 
 class PlayerWithInfo {
   public player: DeclarationWhistPlayer;
@@ -29,10 +27,24 @@ export class GameService implements OnDestroy {
 
   private gameEventsOut$: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
   private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
+  private tricks: number = 0;
+  private currentTurnEmitter: ReplaySubject<DeclarationWhistPlayer> = new ReplaySubject<DeclarationWhistPlayer>(1);
 
   private currentTrick: Trick = null;
 
   constructor(private deckService: DeckService) {
+
+  }
+  /**
+   * Set the player as being to play next.
+   * -1 for no-one currently waiting to play
+   */
+  private setTurnToPlay(playerIndex: number = -1) {
+    for (let i = 0; i < this.players.length; i++) {
+      this.players[i].turnToPlay = playerIndex == i;
+    }
+
+    this.currentTurnEmitter.next(playerIndex >= 0 ? this.players[playerIndex].player : null);
 
   }
 
@@ -49,13 +61,29 @@ export class GameService implements OnDestroy {
         this.trickEmitter.next(this.currentTrick);
 
         this.players[cardEvent.playerIndex].cards--;
+        if (this.currentTrick.cards.length < 4) {
+          this.setTurnToPlay((cardEvent.playerIndex + 1) % this.players.length);
+        } else {
+          this.setTurnToPlay();
+        }
         break;
       case "TrickWon":
         let trickWonEvent = <EventInfo>event.event;
         this.currentTrick.winner = trickWonEvent.player;
         this.players[trickWonEvent.playerIndex].tricksWon++;
         this.trickEmitter.next(this.currentTrick);
+        this.tricks++;
         this.currentTrick = null;
+        if (this.tricks < 13) {
+          this.setTurnToPlay(trickWonEvent.playerIndex);
+        } else {
+          //no more turns until a new match
+          this.setTurnToPlay();
+        }
+        break;
+      case "Trumps":
+        //whoever chose trumps gets to play next
+        this.setTurnToPlay((<Trumps>event.event).playerIndex);
         break;
     }
     console.log("Event: " + event.type);
@@ -65,7 +93,7 @@ export class GameService implements OnDestroy {
   public createDeclarationWhist(players: DeclarationWhistPlayer[]) {
     this.players = [];
     for (let player of players) {
-      this.players.push({ player: player, cards: 13, tricksWon: 0 , turnToPlay: false});
+      this.players.push({ player: player, cards: 13, tricksWon: 0, turnToPlay: false });
     }
 
     this.game = new LocalDeclarationWhist(players, this.deckService.getDeck(), 0);
@@ -147,7 +175,7 @@ export class GameService implements OnDestroy {
     return counts;
   }
 
-  public getTricksWonFor(player: DeclarationWhistPlayer) {
+  public getTricksWonFor(player: DeclarationWhistPlayer): Observable<number> {
     return this.getGameEvents().pipe(
       filter(event => event.type == "TrickWon"),
       map(() => this._getPlayerTrickCounts()),
@@ -156,6 +184,16 @@ export class GameService implements OnDestroy {
         return cardCounts[index];
       })
     )
+  }
+
+  /**
+   * Return true when it's the requested player's time to play a card, false otherwise
+   * @param player 
+   */
+  public getTurnToPlayFor(player: DeclarationWhistPlayer): Observable<boolean> {
+    return this.currentTurnEmitter.asObservable().pipe(
+      map(currentPlayer => currentPlayer === player)
+    );
   }
 
   public getCurrentTrick(): Observable<Trick> {

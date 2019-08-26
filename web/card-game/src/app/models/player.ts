@@ -71,6 +71,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
         return this.bidOutput$.asObservable();
     }
 
+    //game is requesting our bid
     declareBid(otherEstimates: Bid[]): Observable<number> {
 
         let validBids = [];

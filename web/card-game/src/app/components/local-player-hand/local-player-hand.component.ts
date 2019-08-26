@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { HumanPlayerService } from 'src/app/services/human-player.service';
 import { Card } from 'src/app/models/card';
+import { GameService } from 'src/app/services/game.service';
+import { Observable, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'local-player-hand',
@@ -9,7 +12,16 @@ import { Card } from 'src/app/models/card';
 })
 export class LocalPlayerHandComponent implements OnInit {
 
-  constructor(public player: HumanPlayerService) { }
+
+  public validCardsToPlay$: Observable<Card[]>;
+
+  constructor(public player: HumanPlayerService, public game: GameService) {
+
+    this.validCardsToPlay$ = combineLatest(player.validCardsToPlay$, game.getTurnToPlayFor(player.getPlayer())).pipe(
+      map(([validCards,ourTurn]) => ourTurn ? validCards : [])
+    )
+
+   }
 
   ngOnInit() {
   }

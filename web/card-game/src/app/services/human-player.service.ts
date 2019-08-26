@@ -1,12 +1,22 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, ReplaySubject, Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { Suit, Card } from '../models/card';
-import { LocalHuman } from '../models/player';
+import { LocalHuman, DeclarationWhistPlayer } from '../models/player';
 import { CardInTrick } from '../models/declaration-whist';
 import { first } from 'rxjs/operators';
+import { GameService } from './game.service';
 
 export type PlayerState = "Waiting" | "ChoosingBid" | "ChoosingTrumps" | "ChoosingCard";
 
+/**
+ * This class is for combining user input with the localplayer class that talks directly to the game
+ * 
+ * Complication is that sometimes we want to slow down when we request user input to match with
+ * when we're slowly playing back bot behaviour, which is far behind the state of the game object.
+ * 
+ * The GameService is what is slowly replaying back the game to the user, despite the fact that 
+ * the game object itself is unaware of this
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -37,9 +47,9 @@ export class HumanPlayerService implements OnDestroy {
   private player: LocalHuman;
 
 
-  constructor() { }
+  constructor(private gameService: GameService) { }
 
-  public getPlayer(name: string = "You"): LocalHuman {
+  public createPlayer(name: string = "You"): LocalHuman {
     this.player = new LocalHuman(name, this.bid$, this.trumps$, this.playCard$);
 
     //TODO clear subs at end of a match?
@@ -61,6 +71,10 @@ export class HumanPlayerService implements OnDestroy {
     this.playerState$.next("ChoosingBid");
     this.validBids$.next(validBids)
 
+  }
+
+  public getPlayer(): DeclarationWhistPlayer {
+    return this.player;
   }
 
   public needToChooseTrumps() {
