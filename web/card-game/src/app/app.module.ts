@@ -18,6 +18,7 @@ import { TrumpTrackerComponent } from './components/trump-tracker/trump-tracker.
 import { TricksWonTrackerComponent } from './components/tricks-won-tracker/tricks-won-tracker.component';
 import { ActiveTrickComponent } from './components/active-trick/active-trick.component';
 import { BidTrackerComponent } from './components/bid-tracker/bid-tracker.component';
+import { TrickComponent } from './components/trick/trick.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,8 @@ import { BidTrackerComponent } from './components/bid-tracker/bid-tracker.compon
     TrumpTrackerComponent,
     TricksWonTrackerComponent,
     ActiveTrickComponent,
-    BidTrackerComponent
+    BidTrackerComponent,
+    TrickComponent
   ],
   imports: [
     BrowserModule,

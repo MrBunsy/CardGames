@@ -1,34 +1,90 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
 import { DeclarationWhistPlayer } from '../models/player';
 import { Game } from '../models/game';
-import { LocalDeclarationWhist, DeclarationWhistGameEvents, Trumps, Bid, Trick } from '../models/declaration-whist';
-import { Observable } from 'rxjs';
-import { map, filter, tap } from 'rxjs/operators';
+import { LocalDeclarationWhist, DeclarationWhistGameEvents, Trumps, Bid, Trick, CardInTrick, EventInfo } from '../models/declaration-whist';
+import { Observable, Subscription, ReplaySubject, interval, of } from 'rxjs';
+import { map, filter, tap, delay, concatMap } from 'rxjs/operators';
 import { Suit } from '../models/card';
 
+class PlayerWithInfo {
+  public player: DeclarationWhistPlayer;
+  public cards: number;
+  public tricksWon: number;
+}
+/**
+ * Not wanting a game to expose all its inner state, track what state we want here, purely from game events.
+ * 
+ * Then we can replay a game back at whatever speed we like, without altering the game class
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class GameService {
+export class GameService implements OnDestroy {
 
   private game: LocalDeclarationWhist;
-  private players: DeclarationWhistPlayer[];
+  private players: PlayerWithInfo[];
+  private subscriptions: Subscription[] = [];
+
+  private gameEventsOut$: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
+  private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
+
+  private currentTrick: Trick = null;
 
   constructor(private deckService: DeckService) {
 
   }
 
+  private processGameEvent(event: DeclarationWhistGameEvents) {
 
+    switch (event.type) {
+      case "CardPlayed":
+
+        let cardEvent = <CardInTrick>event.event;
+        if (this.currentTrick == null) {
+          this.currentTrick = new Trick(cardEvent.player)
+        }
+        this.currentTrick.cards.push(cardEvent);
+        this.trickEmitter.next(this.currentTrick);
+
+        this.players[cardEvent.playerIndex].cards--;
+        break;
+      case "TrickWon":
+        let trickWonEvent = <EventInfo>event.event;
+        this.currentTrick.winner = trickWonEvent.player;
+        this.players[trickWonEvent.playerIndex].tricksWon++;
+        this.trickEmitter.next(this.currentTrick);
+        this.currentTrick = null;
+        break;
+    }
+    console.log("Event: " + event.type);
+    this.gameEventsOut$.next(event)
+  }
 
   public createDeclarationWhist(players: DeclarationWhistPlayer[]) {
-    this.players = players;
+    this.players = [];
+    for (let player of players) {
+      this.players.push({ player: player, cards: 13, tricksWon: 0 });
+    }
+
     this.game = new LocalDeclarationWhist(players, this.deckService.getDeck(), 0);
+
+    //isn't there a thing to make an observable hot? shouldn't we use that?
+    this.subscriptions.push(this.game.gameEvents.asObservable().pipe(
+      //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
+      concatMap(i => of(i).pipe(delay(1000)))
+    ).subscribe(
+      event => this.processGameEvent(event)
+    ));
+
   }
 
   public getGameEvents(): Observable<DeclarationWhistGameEvents> {
-    return this.game.gameEvents.asObservable();
+    return this.gameEventsOut$.asObservable().pipe(
+
+    )
   }
+
 
   public start() {
     if (!this.game) {
@@ -38,16 +94,22 @@ export class GameService {
     this.game.start();
   }
 
+  private _getPlayerCardCounts(): number[] {
+    let counts = [];
+    for (let player of this.players) {
+      counts.push(player.cards);
+    }
+    return counts;
+  }
+
   public getPlayerCardCounts(): Observable<number[]> {
     //use game events to judge when this might have changed
     return this.getGameEvents().pipe(
-      map(() => this.game.getPlayerCardCounts())
+      filter(event => event.type == "CardPlayed"),
+      map(() => this._getPlayerCardCounts())
     )
   }
 
-  /**
-   * Note, will only work if something is listening to observable from before the match start
-   */
   public getTrumpsEvent(): Observable<Trumps> {
     return this.getGameEvents().pipe(
       filter(event => event.type == "Trumps"),
@@ -60,7 +122,7 @@ export class GameService {
   public getCardCountFor(player: DeclarationWhistPlayer) {
     return this.getPlayerCardCounts().pipe(
       map(allCounts => {
-        let index = this.players.indexOf(player);
+        let index = this.players.findIndex(test => test.player == player);
         return allCounts[index];
       })
     )
@@ -75,19 +137,34 @@ export class GameService {
     );
   }
 
+  private _getPlayerTrickCounts(): number[] {
+    let counts = [];
+    for (let player of this.players) {
+      counts.push(player.tricksWon);
+    }
+    return counts;
+  }
+
   public getTricksWonFor(player: DeclarationWhistPlayer) {
     return this.getGameEvents().pipe(
       filter(event => event.type == "TrickWon"),
-      map(() => this.game.getPlayerTrickCounts()),
+      map(() => this._getPlayerTrickCounts()),
       map(cardCounts => {
-        let index = this.players.indexOf(player);
+        let index = this.players.findIndex(test => test.player == player);
         return cardCounts[index];
       })
     )
   }
 
   public getCurrentTrick(): Observable<Trick> {
-    return this.game.getTricks();
+    return this.trickEmitter.asObservable();
+  }
+
+  ngOnDestroy(): void {
+    for (let sub of this.subscriptions) {
+      sub.unsubscribe();
+    }
+    this.subscriptions = [];
   }
 
 

@@ -45,7 +45,11 @@ export class HandComponent implements OnInit, OnChanges {
    * so some extra faff occurs here so we update elements in the array or add/remove as necessary
    */
   private reconfigure() {
-    let newDrawableCards = [];
+    if (this.cards == null) {
+      this.drawableCards = [];
+      return;
+    }
+    // let newDrawableCards = [];
     let cards = this.deckService.sort(this.cards.slice());
 
     let i = 0;

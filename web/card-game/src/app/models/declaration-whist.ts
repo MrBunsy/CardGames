@@ -80,9 +80,7 @@ export class LocalDeclarationWhist { //implements IGame
     // public playerBids: ReplaySubject<Bid> = new ReplaySubject<Bid>();
     public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
 
-    private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
-
-    constructor(public players: DeclarationWhistPlayer[], private deck: Deck, private bidFirst: number) {
+    constructor(public players: DeclarationWhistPlayer[], private deck: Deck, private bidFirst: number, private verbose: boolean = false) {
         let i = 0;
         for (let player of this.players) {
             this.playerInfos.push(new PlayerInfo(player, i));
@@ -101,7 +99,9 @@ export class LocalDeclarationWhist { //implements IGame
     }
 
     private playerBid(bid: Bid) {
-        console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid.bid);
+        if (this.verbose) {
+            console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid.bid);
+        }
         this.playerInfos[bid.playerIndex].bid = bid.bid;
         this.gameEvents.next({ type: "Bid", event: bid });
         this.bids.push(bid);
@@ -112,7 +112,9 @@ export class LocalDeclarationWhist { //implements IGame
                 bid => this.playerBid({ bid: bid, player: this.players[nextPlayer], playerIndex: nextPlayer })
             )
         } else {
-            console.log("All bids in");
+            if (this.verbose) {
+                console.log("All bids in");
+            }
             //erm, suppose we'd better start the game!
 
             //should work that the first of the highest bid gets trumps
@@ -133,38 +135,44 @@ export class LocalDeclarationWhist { //implements IGame
 
     private trumpsChosen(suit: Suit, player: DeclarationWhistPlayer) {
         this.trumps = suit;
-        console.log("Trumps are " + suit + ". Chosen by " + player.name);
+        if (this.verbose) {
+            console.log("Trumps are " + suit + ". Chosen by " + player.name);
+        }
         this.gameEvents.next({ type: "Trumps", event: { player: player, playerIndex: this.players.lastIndexOf(player), suit: suit } })
         this.startTrick(player);
     }
 
     private startTrick(player: DeclarationWhistPlayer) {
-        console.log("Trick started by " + player.name);
+        if (this.verbose) {
+            console.log("Trick started by " + player.name);
+        }
 
         this.tricks.push(new Trick(player));
 
         player.playCard([]).pipe(first()).subscribe(card => this.playCard({ card: card, player: player, playerIndex: this.players.indexOf(player) }))
     }
 
-    private emitTrick() {
-        let currentTrick = this.tricks[this.tricks.length - 1];
+    // private emitTrick() {
+    //     let currentTrick = this.tricks[this.tricks.length - 1];
 
-        this.trickEmitter.next({ cards: currentTrick.cards.slice(), openedBy: currentTrick.openedBy, winner: currentTrick.winner });
-    }
+    //     this.trickEmitter.next({ cards: currentTrick.cards.slice(), openedBy: currentTrick.openedBy, winner: currentTrick.winner });
+    // }
 
     /**
      * player is playing a card on a trick.
      * @param card 
      */
     private playCard(card: CardInTrick) {
-        console.log(card.player.name + " played " + card.card.toString());
+        if (this.verbose) {
+            console.log(card.player.name + " played " + card.card.toString());
+        }
 
         this.playerInfos[card.playerIndex].cards--;
 
         let currentTrick = this.tricks[this.tricks.length - 1];
         currentTrick.cards.push(card);
 
-        this.emitTrick();
+        // this.emitTrick();
 
         this.gameEvents.next({ type: "CardPlayed", event: card })
 
@@ -192,7 +200,9 @@ export class LocalDeclarationWhist { //implements IGame
     }
 
     private endTrick() {
-        console.log("Trick ended");
+        if (this.verbose) {
+            console.log("Trick ended");
+        }
 
         let currentTrick = this.tricks[this.tricks.length - 1];
 
@@ -222,8 +232,9 @@ export class LocalDeclarationWhist { //implements IGame
 
         currentTrick.winner = winner;
         this.getPlayerInfo(winner).tricksWon++;
-
-        console.log(winner.name + " won the trick")
+        if (this.verbose) {
+            console.log(winner.name + " won the trick")
+        }
         this.gameEvents.next({ type: "TrickWon", event: { player: winner, playerIndex: this.players.indexOf(winner) } });
 
         if (this.tricks.length < 13) {
@@ -235,11 +246,15 @@ export class LocalDeclarationWhist { //implements IGame
     }
 
     private endMatch() {
-        console.log("End of Match");
+        if (this.verbose) {
+            console.log("End of Match");
+        }
         for (let player of this.playerInfos) {
             let score = player.tricksWon + (player.tricksWon == player.bid ? 10 : 0);
             player.score += score;
-            console.log(player.player.name + " bid " + player.bid + ", won " + player.tricksWon + " = " + score + " points");
+            if (this.verbose) {
+                console.log(player.player.name + " bid " + player.bid + ", won " + player.tricksWon + " = " + score + " points");
+            }
         }
 
         let topScore = 0;
@@ -270,25 +285,25 @@ export class LocalDeclarationWhist { //implements IGame
 
 
 
-    //bellow are useful gubbins for the GUI
+    // //bellow are useful gubbins for the GUI
 
-    public getPlayerCardCounts(): number[] {
-        return this.playerInfos.map(info => info.cards);
-    }
+    // public getPlayerCardCounts(): number[] {
+    //     return this.playerInfos.map(info => info.cards);
+    // }
 
-    public getPlayerTrickCounts(): number[] {
-        return this.playerInfos.map(info => info.tricksWon);
-    }
+    // public getPlayerTrickCounts(): number[] {
+    //     return this.playerInfos.map(info => info.tricksWon);
+    // }
 
-    public getCurrentTrick(): Trick {
-        if (this.tricks.length > 0) {
-            return this.tricks[this.tricks.length - 1];
-        } else {
-            return null;
-        }
-    }
+    // public getCurrentTrick(): Trick {
+    //     if (this.tricks.length > 0) {
+    //         return this.tricks[this.tricks.length - 1];
+    //     } else {
+    //         return null;
+    //     }
+    // }
 
-    public getTricks(): Observable<Trick> {
-        return this.trickEmitter.asObservable();
-    }
+    // public getTricks(): Observable<Trick> {
+    //     return this.trickEmitter.asObservable();
+    // }
 }

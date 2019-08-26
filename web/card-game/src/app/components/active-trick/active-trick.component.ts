@@ -7,10 +7,7 @@ import { filter, map } from 'rxjs/operators';
 
 
 
-class DrawableCard {
-  public card: Card;
-  public zIndex: number;
-}
+
 
 /**
  * Assumes: left, top, right, bottom, of players in order
@@ -26,7 +23,9 @@ export class ActiveTrickComponent implements OnInit, OnDestroy {
   // @Input() players: DeclarationWhistPlayer[];
 
   //left, top, right, bottom] null entries for no card
-  public cards: DrawableCard[];
+  public cards: Card[];
+  //card at the bottom of the trick
+  public first: number;
 
   private subs: Subscription[] = [];
 
@@ -35,13 +34,15 @@ export class ActiveTrickComponent implements OnInit, OnDestroy {
     this.subs.push(this.game.getCurrentTrick().subscribe(
       trick => {
         this.cards = [null, null, null, null];
+        let foundFirst: boolean = false;
         //if four cards, then this trick has been won
-        if (trick != null && trick.cards.length < 4) {
-          let z = 0;
+        if (trick != null && trick.winner == null) {//trick.cards.length < 4
           for (let card of trick.cards) {
-            this.cards[card.playerIndex] = { card: card.card, zIndex: z };
-            z++;
-
+            if (!foundFirst) {
+              this.first = card.playerIndex;
+              foundFirst = true;
+            }
+            this.cards[card.playerIndex] = card.card;
           }
         }
       }
