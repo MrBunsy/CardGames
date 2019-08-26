@@ -66,7 +66,7 @@ export enum DeclarationWhistGameEventsType {
 export class DeclarationWhistGameEvents {
     // public type: DeclarationWhistGameEventsType;
     //turns out enums are a PITA in TS/angular
-    public type: "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished";
+    public type: "MatchStart" | "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished";
     public event: Bid | Trumps | CardInTrick | EventInfo | Results;
 }
 
@@ -93,9 +93,11 @@ export class LocalDeclarationWhist { //implements IGame
 
     public start() {
         this.deck.deal(this.players);
+        this.gameEvents.next({ type: "MatchStart", event: null });
         this.players[this.bidFirst].declareBid([]).pipe(first()).subscribe(
             bid => this.playerBid({ playerIndex: this.bidFirst, bid: bid, player: this.players[this.bidFirst] })
         )
+       
     }
 
     private playerBid(bid: Bid) {

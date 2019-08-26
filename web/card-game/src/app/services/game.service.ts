@@ -9,8 +9,9 @@ import { Suit } from '../models/card';
 
 class PlayerWithInfo {
   public player: DeclarationWhistPlayer;
-  public cards: number;
-  public tricksWon: number;
+  public cards: number = 13;
+  public tricksWon: number = 0;
+  public turnToPlay: boolean = false;
 }
 /**
  * Not wanting a game to expose all its inner state, track what state we want here, purely from game events.
@@ -64,7 +65,7 @@ export class GameService implements OnDestroy {
   public createDeclarationWhist(players: DeclarationWhistPlayer[]) {
     this.players = [];
     for (let player of players) {
-      this.players.push({ player: player, cards: 13, tricksWon: 0 });
+      this.players.push({ player: player, cards: 13, tricksWon: 0 , turnToPlay: false});
     }
 
     this.game = new LocalDeclarationWhist(players, this.deckService.getDeck(), 0);
@@ -72,6 +73,7 @@ export class GameService implements OnDestroy {
     //isn't there a thing to make an observable hot? shouldn't we use that?
     this.subscriptions.push(this.game.gameEvents.asObservable().pipe(
       //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
+      //TODO extra funky logic to not delay player's events
       concatMap(i => of(i).pipe(delay(1000)))
     ).subscribe(
       event => this.processGameEvent(event)
@@ -105,7 +107,7 @@ export class GameService implements OnDestroy {
   public getPlayerCardCounts(): Observable<number[]> {
     //use game events to judge when this might have changed
     return this.getGameEvents().pipe(
-      filter(event => event.type == "CardPlayed"),
+      filter(event => event.type == "CardPlayed" || event.type == "MatchStart"),
       map(() => this._getPlayerCardCounts())
     )
   }
