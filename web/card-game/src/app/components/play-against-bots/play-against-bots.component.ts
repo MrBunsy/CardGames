@@ -28,6 +28,8 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
   public playerState$: Observable<PlayerState>;
   public playerCards$: Observable<Card[]>;
   public validBids$: Observable<number[]>;
+
+  public roundRunning$: Observable<boolean>;
   
 
 
@@ -50,11 +52,12 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event)));
 
+    this.roundRunning$ = this.game.getRoundInProgress();
     
   }
 
   ngOnInit() {
-    this.game.start();
+    // this.game.start();
   }
 
   ngOnDestroy(): void {

@@ -1,15 +1,20 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
 import { DeclarationWhistPlayer } from '../models/player';
-import { LocalDeclarationWhist, DeclarationWhistGameEvents, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo } from '../models/declaration-whist';
-import { Observable, Subscription, ReplaySubject, of } from 'rxjs';
+import { LocalDeclarationWhist, DeclarationWhistGameEvents, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
+import { Observable, Subscription, ReplaySubject, of, BehaviorSubject } from 'rxjs';
 import { map, filter, delay, concatMap } from 'rxjs/operators';
 
 class PlayerWithInfo {
-  public player: DeclarationWhistPlayer;
+  constructor(public player: DeclarationWhistPlayer) { }
   public cards: number = 13;
   public tricksWon: number = 0;
   public turnToPlay: boolean = false;
+  public totalScore: number = 0;
+
+  public nextRound() {
+    this.cards = 13;
+  }
 }
 /**
  * Not wanting a game to expose all its inner state, track what state we want here, purely from game events.
@@ -29,10 +34,13 @@ export class GameService implements OnDestroy {
   private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
   private tricks: number = 0;
   private currentTurnEmitter: ReplaySubject<DeclarationWhistPlayer> = new ReplaySubject<DeclarationWhistPlayer>(1);
+  private currentRoundEmitter: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  private roundInProgressEmittier: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
   private currentTrick: Trick = null;
 
   private localPlayerIndex: number;
+  private rounds: number = 0;
 
   constructor(private deckService: DeckService) {
 
@@ -87,6 +95,17 @@ export class GameService implements OnDestroy {
         //whoever chose trumps gets to play next
         this.setTurnToPlay((<TrumpsEvent>event.event).playerIndex);
         break;
+      case "MatchStart":
+        this.currentRoundEmitter.next(this.rounds);
+        this.roundInProgressEmittier.next(true);
+        break;
+      case "MatchFinished":
+        
+        this.roundInProgressEmittier.next(false);
+        this.rounds++;
+        this.currentRoundEmitter.next(this.rounds);
+        
+        break;
     }
     console.log("Event: " + event.type);
     this.gameEventsOut$.next(event)
@@ -105,10 +124,10 @@ export class GameService implements OnDestroy {
     this.localPlayerIndex = localPlayerIndex;
     this.players = [];
     for (let player of players) {
-      this.players.push({ player: player, cards: 13, tricksWon: 0, turnToPlay: false });
+      this.players.push(new PlayerWithInfo(player));
     }
 
-    this.game = new LocalDeclarationWhist(players, this.deckService.getDeck(), 0);
+    this.game = new LocalDeclarationWhist(players, this.deckService.getDeck(), Math.floor(Math.random()*this.players.length), true);
 
     //isn't there a thing to make an observable hot? shouldn't we use that?
     this.subscriptions.push(this.game.gameEvents.asObservable().pipe(
@@ -217,6 +236,24 @@ export class GameService implements OnDestroy {
 
   public getCurrentTrick(): Observable<Trick> {
     return this.trickEmitter.asObservable();
+  }
+
+  /**
+   * Get current match number. Null for not started
+   */
+  public getCurrentRound(): Observable<number> {
+    return this.currentRoundEmitter.asObservable();
+  }
+
+  public getRoundInProgress(): Observable<boolean> {
+    return this.roundInProgressEmittier.asObservable();
+  }
+
+  public getCurrentScores(): Observable<ResultsEvent> {
+    return this.getGameEvents().pipe(
+      filter(event => event.type == "MatchFinished"),
+      map(event => <ResultsEvent>event.event)
+    )
   }
 
   ngOnDestroy(): void {

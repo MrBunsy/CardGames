@@ -19,6 +19,7 @@ import { TricksWonTrackerComponent } from './components/tricks-won-tracker/trick
 import { ActiveTrickComponent } from './components/active-trick/active-trick.component';
 import { BidTrackerComponent } from './components/bid-tracker/bid-tracker.component';
 import { TrickComponent } from './components/trick/trick.component';
+import { TotalScoresComponent } from './components/total-scores/total-scores.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { TrickComponent } from './components/trick/trick.component';
     TricksWonTrackerComponent,
     ActiveTrickComponent,
     BidTrackerComponent,
-    TrickComponent
+    TrickComponent,
+    TotalScoresComponent
   ],
   imports: [
     BrowserModule,

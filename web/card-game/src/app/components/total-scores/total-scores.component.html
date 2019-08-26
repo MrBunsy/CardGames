@@ -1,0 +1,25 @@
+<div class="scores">
+  <ng-container *ngIf="scores$ | async as scores; else firstRound">
+    <h3>Round {{(round$ | async) +1}} Total Scores</h3>
+    <table>
+      <tr>
+        <th>Player</th>
+        <th>Bid</th>
+        <th>Tricks</th>
+        <th>Total Score</th>
+      </tr>
+      <tr *ngFor="let player of scores.players">
+        <td>{{player.player.name}}</td>
+        <td>{{player.bid}}</td>
+        <td>{{player.tricksWon}}</td>
+        <td>{{player.score}}</td>
+      </tr>
+    </table>
+    <button (click)="start()">Next Round</button>
+  </ng-container>
+
+  <ng-template #firstRound>
+    <h3>First Round</h3>
+    <button (click)="start()">Start</button>
+  </ng-template>
+</div>

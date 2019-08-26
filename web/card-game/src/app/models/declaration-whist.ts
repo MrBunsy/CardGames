@@ -6,12 +6,18 @@ import { Suit, Card } from './card';
 
 //long term plan to make this suitable for multiple games. for now, just write for declaration whist and tease apart later
 //this is a stand in for the remote server
-// export class DeclarationWhist{//} implements Game {
 
-//     constructor(private deck: Card[], private players:DeclarationWhistPlayer[]){
-
-//     }
-// }
+/**
+ * Terminology is a bit wooly, but latest plan is:
+ *  
+ * A match lasts as long as the set of four players wants it to and is made up of multiple rounds
+ * 
+ * Each round starts with the deck dealt out and lasts for thirteen tricks
+ * 
+ * A running score is kept per match.
+ * 
+ * One DeclarationWhistGame object per match
+ */
 
 export class EventInfo {
     public player: DeclarationWhistPlayer;
@@ -29,21 +35,27 @@ export class TrumpsEvent extends EventInfo {
     public suit: Suit;
 }
 
-class Results {
-    public players: PlayerInfo[];
+export class ResultsEvent {
+    public players: PlayerScores[];
 }
-// export class TrickInfo{
-//     public player: DeclarationWhistPlayer;
-// }
 
-class PlayerInfo {
-
+export class PlayerScores {
     public bid: number = null;
     public tricksWon: number = 0;
     public score: number = 0;
+    constructor(public player: DeclarationWhistPlayer, public index: number) { }
+}
+
+class PlayerInfo extends PlayerScores {
+
+
     public cards: number = 13;
 
-    constructor(public player: DeclarationWhistPlayer, public index: number) { }
+    public nextRound() {
+        this.bid = null;
+        this.tricksWon = 0;
+        this.cards = 13;
+    }
 }
 
 export class Trick {
@@ -64,10 +76,9 @@ export enum DeclarationWhistGameEventsType {
 }
 
 export class DeclarationWhistGameEvents {
-    // public type: DeclarationWhistGameEventsType;
     //turns out enums are a PITA in TS/angular
     public type: "MatchStart" | "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished";
-    public event: BidEvent | TrumpsEvent | CardInTrickEvent | EventInfo | Results;
+    public event: BidEvent | TrumpsEvent | CardInTrickEvent | EventInfo | ResultsEvent;
 }
 
 export class LocalDeclarationWhist { //implements IGame
@@ -77,7 +88,7 @@ export class LocalDeclarationWhist { //implements IGame
     private tricks: Trick[] = [];
     private trumps: Suit;
 
-    // public playerBids: ReplaySubject<Bid> = new ReplaySubject<Bid>();
+    //main interface for the world to watch the game
     public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
 
     constructor(public players: DeclarationWhistPlayer[], private deck: Deck, private bidFirst: number, private verbose: boolean = false) {
@@ -90,14 +101,20 @@ export class LocalDeclarationWhist { //implements IGame
     }
 
 
-
+    /**
+     * Start a match. works for first match or next match
+     */
     public start() {
+        //reset various counters
+        for (let player of this.playerInfos) {
+            player.nextRound();
+        }
         this.deck.deal(this.players);
         this.gameEvents.next({ type: "MatchStart", event: null });
         this.players[this.bidFirst].declareBid([]).pipe(first()).subscribe(
             bid => this.playerBid({ playerIndex: this.bidFirst, bid: bid, player: this.players[this.bidFirst] })
         )
-       
+
     }
 
     private playerBid(bid: BidEvent) {
@@ -153,12 +170,6 @@ export class LocalDeclarationWhist { //implements IGame
 
         player.playCard([]).pipe(first()).subscribe(card => this.playCard({ card: card, player: player, playerIndex: this.players.indexOf(player) }))
     }
-
-    // private emitTrick() {
-    //     let currentTrick = this.tricks[this.tricks.length - 1];
-
-    //     this.trickEmitter.next({ cards: currentTrick.cards.slice(), openedBy: currentTrick.openedBy, winner: currentTrick.winner });
-    // }
 
     /**
      * player is playing a card on a trick.
