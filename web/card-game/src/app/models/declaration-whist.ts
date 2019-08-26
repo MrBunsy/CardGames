@@ -18,14 +18,14 @@ export class EventInfo {
     public playerIndex: number;
 }
 
-export class Bid extends EventInfo {
+export class BidEvent extends EventInfo {
     public bid: number;
 }
 
-export class CardInTrick extends EventInfo {
+export class CardInTrickEvent extends EventInfo {
     public card: Card;
 }
-export class Trumps extends EventInfo {
+export class TrumpsEvent extends EventInfo {
     public suit: Suit;
 }
 
@@ -48,7 +48,7 @@ class PlayerInfo {
 
 export class Trick {
     constructor(public openedBy: DeclarationWhistPlayer) { }
-    public cards: CardInTrick[] = [];
+    public cards: CardInTrickEvent[] = [];
     public winner: DeclarationWhistPlayer = null;
 }
 
@@ -67,13 +67,13 @@ export class DeclarationWhistGameEvents {
     // public type: DeclarationWhistGameEventsType;
     //turns out enums are a PITA in TS/angular
     public type: "MatchStart" | "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished";
-    public event: Bid | Trumps | CardInTrick | EventInfo | Results;
+    public event: BidEvent | TrumpsEvent | CardInTrickEvent | EventInfo | Results;
 }
 
 export class LocalDeclarationWhist { //implements IGame
 
     private playerInfos: PlayerInfo[] = [];
-    private bids: Bid[] = [];
+    private bids: BidEvent[] = [];
     private tricks: Trick[] = [];
     private trumps: Suit;
 
@@ -100,7 +100,7 @@ export class LocalDeclarationWhist { //implements IGame
        
     }
 
-    private playerBid(bid: Bid) {
+    private playerBid(bid: BidEvent) {
         if (this.verbose) {
             console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid.bid);
         }
@@ -164,7 +164,7 @@ export class LocalDeclarationWhist { //implements IGame
      * player is playing a card on a trick.
      * @param card 
      */
-    private playCard(card: CardInTrick) {
+    private playCard(card: CardInTrickEvent) {
         if (this.verbose) {
             console.log(card.player.name + " played " + card.card.toString());
         }
@@ -209,9 +209,9 @@ export class LocalDeclarationWhist { //implements IGame
         let currentTrick = this.tricks[this.tricks.length - 1];
 
 
-        let highestInSuit: CardInTrick = currentTrick.cards[0];
+        let highestInSuit: CardInTrickEvent = currentTrick.cards[0];
         let suit = highestInSuit.card.suit;
-        let highestTrump: CardInTrick = null
+        let highestTrump: CardInTrickEvent = null
 
 
         //find highest card of the suit and/or highest trump

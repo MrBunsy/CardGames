@@ -1,7 +1,7 @@
 import { Card, Suit, suitArray } from './card';
 import { Game } from './game';
 import { Observable, of, ReplaySubject, Subject } from 'rxjs';
-import { Bid, CardInTrick, Trumps } from './declaration-whist';
+import { BidEvent, CardInTrickEvent, TrumpsEvent } from './declaration-whist';
 import { tap, map } from 'rxjs/operators';
 
 export interface CardPlayer {
@@ -19,7 +19,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
      * Get our estimated number of tricks
      * @param otherEstimates estimates of the preceeding players, in order. array of tuples of player index and esimate [(0, 13), (1,10)]
      */
-    declareBid(otherEstimates: Bid[]): Observable<number>;
+    declareBid(otherEstimates: BidEvent[]): Observable<number>;
 
     /**
      * This player's bid was highest, they get to choose trumps
@@ -30,7 +30,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    playCard(trick: CardInTrick[]): Observable<Card>;
+    playCard(trick: CardInTrickEvent[]): Observable<Card>;
 }
 
 export class LocalHuman implements DeclarationWhistPlayer {
@@ -72,7 +72,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
     }
 
     //game is requesting our bid
-    declareBid(otherEstimates: Bid[]): Observable<number> {
+    declareBid(otherEstimates: BidEvent[]): Observable<number> {
 
         let validBids = [];
         let totalTrickEstimates = 0;
@@ -109,7 +109,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
         this.cards$.next(this.cards);
     }
 
-    playCard(trick: CardInTrick[]): Observable<Card> {
+    playCard(trick: CardInTrickEvent[]): Observable<Card> {
         let validCards = this.cards.slice();
         if (trick.length > 0) {
             //suit to follow
@@ -146,7 +146,7 @@ export class Moron implements DeclarationWhistPlayer {
         this.cards$.next(cards);
     }
 
-    public trumpsChosen(trumps: Trumps) {
+    public trumpsChosen(trumps: TrumpsEvent) {
         //moron is too dumb to care
     }
 
@@ -174,7 +174,7 @@ export class Moron implements DeclarationWhistPlayer {
      * Get our estimated number of tricks
      * @param otherEstimates estimates of the preceeding players, in order. array of tuples of player index and esimate [(0, 13), (1,10)]
      */
-    public declareBid(otherEstimates: Bid[]): Observable<number> {
+    public declareBid(otherEstimates: BidEvent[]): Observable<number> {
 
         let preferedTrickEstimate = this.preferedTrickEstimate();
 
@@ -218,7 +218,7 @@ export class Moron implements DeclarationWhistPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    public playCard(trick: CardInTrick[]): Observable<Card> {
+    public playCard(trick: CardInTrickEvent[]): Observable<Card> {
 
         let cardIndex = 0;
 

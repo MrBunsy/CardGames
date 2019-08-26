@@ -46,7 +46,7 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
     this.playerCards$ = this.player.cards$.asObservable();
     this.validBids$ = this.player.validBids$.asObservable();
 
-    this.game.createDeclarationWhist(this.players);
+    this.game.createDeclarationWhist(this.players, 3);
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event)));
 

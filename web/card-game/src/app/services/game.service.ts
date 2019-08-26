@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
 import { DeclarationWhistPlayer } from '../models/player';
-import { LocalDeclarationWhist, DeclarationWhistGameEvents, Trumps, Bid, Trick, CardInTrick, EventInfo } from '../models/declaration-whist';
+import { LocalDeclarationWhist, DeclarationWhistGameEvents, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo } from '../models/declaration-whist';
 import { Observable, Subscription, ReplaySubject, of } from 'rxjs';
 import { map, filter, delay, concatMap } from 'rxjs/operators';
 
@@ -32,6 +32,8 @@ export class GameService implements OnDestroy {
 
   private currentTrick: Trick = null;
 
+  private localPlayerIndex: number;
+
   constructor(private deckService: DeckService) {
 
   }
@@ -53,7 +55,7 @@ export class GameService implements OnDestroy {
     switch (event.type) {
       case "CardPlayed":
 
-        let cardEvent = <CardInTrick>event.event;
+        let cardEvent = <CardInTrickEvent>event.event;
         if (this.currentTrick == null) {
           this.currentTrick = new Trick(cardEvent.player)
         }
@@ -83,14 +85,24 @@ export class GameService implements OnDestroy {
         break;
       case "Trumps":
         //whoever chose trumps gets to play next
-        this.setTurnToPlay((<Trumps>event.event).playerIndex);
+        this.setTurnToPlay((<TrumpsEvent>event.event).playerIndex);
         break;
     }
     console.log("Event: " + event.type);
     this.gameEventsOut$.next(event)
   }
 
-  public createDeclarationWhist(players: DeclarationWhistPlayer[]) {
+  private isEventFromLocalPlayer(event: DeclarationWhistGameEvents): boolean {
+
+    if (event.type == "Bid" || event.type == "CardPlayed" || event.type == "Trumps") {//deliberately exclude TrickWon, since this didn't directly originate from player action
+      return (<EventInfo>event.event).playerIndex == this.localPlayerIndex;
+    }
+
+    return false;
+  }
+
+  public createDeclarationWhist(players: DeclarationWhistPlayer[], localPlayerIndex: number = -1) {
+    this.localPlayerIndex = localPlayerIndex;
     this.players = [];
     for (let player of players) {
       this.players.push({ player: player, cards: 13, tricksWon: 0, turnToPlay: false });
@@ -101,8 +113,15 @@ export class GameService implements OnDestroy {
     //isn't there a thing to make an observable hot? shouldn't we use that?
     this.subscriptions.push(this.game.gameEvents.asObservable().pipe(
       //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
-      //TODO extra funky logic to not delay player's events
-      concatMap(i => of(i).pipe(delay(1000)))
+      //extra funky logic to not delay player's events
+      concatMap(event => {
+        if (this.isEventFromLocalPlayer(event)) {
+          return of(event)
+        } else {
+          return of(event).pipe(delay(1000))
+        }
+      }
+      )
     ).subscribe(
       event => this.processGameEvent(event)
     ));
@@ -140,12 +159,12 @@ export class GameService implements OnDestroy {
     )
   }
 
-  public getTrumpsEvent(): Observable<Trumps> {
+  public getTrumpsEvent(): Observable<TrumpsEvent> {
     return this.getGameEvents().pipe(
       filter(event => event.type == "Trumps"),
       map(trumpEvent => trumpEvent.event),
       //extra step seems to shut the linter up
-      map((trumpEvent: Trumps) => trumpEvent),
+      map((trumpEvent: TrumpsEvent) => trumpEvent),
     )
   }
 
@@ -162,7 +181,7 @@ export class GameService implements OnDestroy {
     return this.getGameEvents().pipe(
       filter(event => event.type == "Bid"),
       map(event => event.event),
-      filter((event: Bid) => event.player == player),
+      filter((event: BidEvent) => event.player == player),
       map(event => event.bid)
     );
   }
