@@ -2,8 +2,8 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
 import { DeclarationWhistPlayer } from '../models/player';
 import { LocalDeclarationWhist, DeclarationWhistGameEvents, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
-import { Observable, Subscription, ReplaySubject, of, BehaviorSubject } from 'rxjs';
-import { map, filter, delay, concatMap } from 'rxjs/operators';
+import { Observable, Subscription, ReplaySubject, of, BehaviorSubject, merge } from 'rxjs';
+import { map, filter, delay, concatMap, combineLatest } from 'rxjs/operators';
 
 class PlayerWithInfo {
   constructor(public player: DeclarationWhistPlayer) { }
@@ -104,8 +104,9 @@ export class GameService implements OnDestroy {
       case "MatchFinished":
         
         this.roundInProgressEmittier.next(false);
-        this.rounds++;
         this.currentRoundEmitter.next(this.rounds);
+        this.rounds++;
+        
         
         break;
     }
@@ -202,13 +203,29 @@ export class GameService implements OnDestroy {
     )
   }
 
-  public getBidsFor(player: DeclarationWhistPlayer) {
+  public getMatchStart(): Observable<boolean>{
     return this.getGameEvents().pipe(
+      filter(event => event.type == "MatchStart"),
+      map(() => true)
+    );
+  }
+
+  /**
+   * Return current bid for players, or null at the start of a new round
+   */
+  public getBidsFor(player: DeclarationWhistPlayer): Observable<number> {
+    let bids = this.getGameEvents().pipe(
       filter(event => event.type == "Bid"),
       map(event => event.event),
       filter((event: BidEvent) => event.player == player),
       map(event => event.bid)
     );
+
+    let start = this.getMatchStart().pipe(
+      map(() => null)
+    )
+
+    return merge(bids, start);
   }
 
   private _getPlayerTrickCounts(): number[] {
@@ -219,9 +236,13 @@ export class GameService implements OnDestroy {
     return counts;
   }
 
+  /**
+   * Return current tricks won for players
+   * @param player 
+   */
   public getTricksWonFor(player: DeclarationWhistPlayer): Observable<number> {
     return this.getGameEvents().pipe(
-      filter(event => event.type == "TrickWon"),
+      filter(event => event.type == "TrickWon" || event.type == "MatchStart"),
       map(() => this._getPlayerTrickCounts()),
       map(cardCounts => {
         let index = this.players.findIndex(test => test.player == player);
