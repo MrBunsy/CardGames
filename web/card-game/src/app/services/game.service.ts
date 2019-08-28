@@ -185,13 +185,21 @@ export class GameService implements OnDestroy {
     )
   }
 
+  /**
+   * returns null at start of a new round, then a TrumpsEvent when trumps chosen
+   */
   public getTrumpsEvent(): Observable<TrumpsEvent> {
-    return this.getGameEvents().pipe(
+    let trumps = this.getGameEvents().pipe(
       filter(event => event.type == "Trumps"),
       map(trumpEvent => trumpEvent.event),
       //extra step seems to shut the linter up
       map((trumpEvent: TrumpsEvent) => trumpEvent),
     )
+
+    let start = this.getMatchStart().pipe(
+      map(() => null)
+    )
+    return merge(trumps, start);
   }
 
   public getCardCountFor(player: DeclarationWhistPlayer) {
@@ -203,10 +211,10 @@ export class GameService implements OnDestroy {
     )
   }
 
-  public getMatchStart(): Observable<boolean>{
+  public getMatchStart(): Observable<void>{
     return this.getGameEvents().pipe(
       filter(event => event.type == "MatchStart"),
-      map(() => true)
+      map(() => null)
     );
   }
 
