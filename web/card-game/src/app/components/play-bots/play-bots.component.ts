@@ -32,11 +32,11 @@ export class PlayBotsComponent implements OnInit, OnDestroy {
       new Moron("Bob")
     ];
 
-    this.game = new LocalDeclarationWhist(this.players, this.deckService.getDeck(), 0);
+    this.game = new LocalDeclarationWhist(this.players, 0);
 
     this.subscriptions.push(this.game.gameEvents.subscribe(event => this.log.push(event)));
 
-    this.game.start();
+    this.game.start(this.deckService.getDeck());
 
   }
 
