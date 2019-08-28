@@ -1,46 +1,62 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Moron, LocalHuman, DeclarationWhistPlayer } from 'src/app/models/player';
 import { LocalDeclarationWhist, DeclarationWhistGameEvents } from 'src/app/models/declaration-whist';
 import { DeckService } from 'src/app/services/deck.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
+import { GameService } from 'src/app/services/game.service';
 
 @Component({
   selector: 'app-play-bots',
   templateUrl: './play-bots.component.html',
   styleUrls: ['./play-bots.component.css']
 })
-export class PlayBotsComponent implements OnInit, OnDestroy {
+export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
+
 
 
   public players: DeclarationWhistPlayer[];
   public player: LocalHuman;
-  public game: LocalDeclarationWhist;
+  public roundRunning$: Observable<boolean>;
 
   public log: DeclarationWhistGameEvents[] = [];
 
   private subscriptions: Subscription[] = [];
 
-  constructor(private deckService: DeckService) {
+  @ViewChild("logDiv") logDiv: ElementRef;
 
-    // this.player = new LocalHuman();
+  constructor(private game: GameService) {
 
     this.players = [
       new Moron("Ted"),
       new Moron("Bill"),
       new Moron("Steve"),
-      // this.player
       new Moron("Bob")
     ];
 
-    this.game = new LocalDeclarationWhist(this.players, 0);
+    this.game.createDeclarationWhist(this.players, 200);
 
-    this.subscriptions.push(this.game.gameEvents.subscribe(event => this.log.push(event)));
+    this.subscriptions.push(this.game.getGameEvents().subscribe(event => {
+      this.log.push(event);
+      this.scrollLog();
+    }));
 
-    this.game.start(this.deckService.getDeck());
+    // this.game.start();
+
+    this.roundRunning$ = this.game.getRoundInProgress();
 
   }
 
   ngOnInit() {
+  }
+
+  ngAfterViewInit(): void {
+    
+  }
+
+  private scrollLog(){
+    if(this.logDiv && this.logDiv.nativeElement){
+      this.logDiv.nativeElement.scrollTop = this.logDiv.nativeElement.scrollHeight;
+    }
   }
 
   ngOnDestroy(): void {

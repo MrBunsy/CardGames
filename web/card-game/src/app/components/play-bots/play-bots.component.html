@@ -1,12 +1,42 @@
-<div *ngFor="let item of log">
-  {{item.type}}:
-  <ng-container *ngIf="item.type == 'Bid'">Player {{item.event.player.name}} bid {{item.event.bid}}</ng-container>
-  <ng-container *ngIf="item.type == 'Trumps'">Player {{item.event.player.name}} chose {{item.event.suit}} as trumps</ng-container>
-  <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.event.player.name}} played {{item.event.card.toString()}}</ng-container>
-  <ng-container *ngIf="item.type == 'TrickWon'">Player {{item.event.player.name}} won the trick</ng-container>
-  <ng-container *ngIf="item.type == 'MatchFinished'">Match Complete. Scores:
-    <ng-container *ngFor="let player of item.event.players">
-        {{player.player.name}} bid  {{player.bid}}  won  {{player.tricksWon}}  =  {{player.score}}  points
+<div class="table">
+  <div class="trumpTracker">
+    <trump-tracker></trump-tracker>
+  </div>
+  <div class="topPlayer">
+    <remote-player-hand [player]="players[1]"></remote-player-hand>
+    <bid-tracker [player]="players[1]"></bid-tracker>
+  </div>
+  <div class="leftPlayer">
+    <remote-player-hand [player]="players[0]" [vertical]="true"></remote-player-hand>
+    <bid-tracker [player]="players[0]"></bid-tracker>
+  </div>
+  <div class="tricks">
+    <active-trick *ngIf="roundRunning$ | async"></active-trick>
+    <total-scores *ngIf="!(roundRunning$ | async)"></total-scores>
+  </div>
+  <div class="rightPlayer">
+    <remote-player-hand [player]="players[2]" [vertical]="true"></remote-player-hand>
+    <bid-tracker [player]="players[2]"></bid-tracker>
+  </div>
+  <div class="bottomPlayer">
+    <remote-player-hand [player]="players[3]"></remote-player-hand>
+    <bid-tracker [player]="players[3]"></bid-tracker>
+  </div>
+</div>
+
+<div #logDiv class="log">
+  <div *ngFor="let item of log">
+    {{item.type}}:
+    <ng-container *ngIf="item.type == 'Bid'">Player {{item.event.player.name}} bid {{item.event.bid}}</ng-container>
+    <ng-container *ngIf="item.type == 'Trumps'">Player {{item.event.player.name}} chose {{item.event.suit}} as trumps
     </ng-container>
-  </ng-container>
+    <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.event.player.name}} played
+      {{item.event.card.toString()}}</ng-container>
+    <ng-container *ngIf="item.type == 'TrickWon'">Player {{item.event.player.name}} won the trick</ng-container>
+    <ng-container *ngIf="item.type == 'MatchFinished'">Match Complete. Scores:
+      <ng-container *ngFor="let player of item.event.players">
+        {{player.player.name}} bid {{player.bid}} won {{player.tricksWon}} = {{player.score}} points
+      </ng-container>
+    </ng-container>
+  </div>
 </div>
