@@ -164,6 +164,7 @@ export class GameService implements OnDestroy {
     for(let player of this.players){
       player.nextRound();
     }
+    this.tricks = 0;
     this.game.start(this.deckService.getDeck());
   }
 
