@@ -45,7 +45,6 @@ export class GameService implements OnDestroy {
   private rounds: number = 0;
 
   constructor(private deckService: DeckService) {
-
   }
   /**
    * Set the player as being to play next.
@@ -102,12 +101,12 @@ export class GameService implements OnDestroy {
         this.roundInProgressEmittier.next(true);
         break;
       case "MatchFinished":
-        
+
         this.roundInProgressEmittier.next(false);
         this.currentRoundEmitter.next(this.rounds);
         this.rounds++;
-        
-        
+
+
         break;
     }
     console.log("Event: " + event.type);
@@ -124,13 +123,14 @@ export class GameService implements OnDestroy {
   }
 
   public createDeclarationWhist(players: DeclarationWhistPlayer[], localPlayerIndex: number = -1) {
+    this.tidyUpGame();
     this.localPlayerIndex = localPlayerIndex;
     this.players = [];
     for (let player of players) {
       this.players.push(new PlayerWithInfo(player));
     }
 
-    this.game = new LocalDeclarationWhist(players, Math.floor(Math.random()*this.players.length), true);
+    this.game = new LocalDeclarationWhist(players, Math.floor(Math.random() * this.players.length), true);
 
     //isn't there a thing to make an observable hot? shouldn't we use that?
     this.subscriptions.push(this.game.gameEvents.asObservable().pipe(
@@ -140,7 +140,7 @@ export class GameService implements OnDestroy {
         if (this.isEventFromLocalPlayer(event)) {
           return of(event)
         } else {
-          return of(event).pipe(delay(10))
+          return of(event).pipe(delay(1000))
         }
       }
       )
@@ -162,7 +162,7 @@ export class GameService implements OnDestroy {
       console.warn("No game created yet");
       return;
     }
-    for(let player of this.players){
+    for (let player of this.players) {
       player.nextRound();
     }
     this.tricks = 0;
@@ -211,7 +211,7 @@ export class GameService implements OnDestroy {
     )
   }
 
-  public getMatchStart(): Observable<void>{
+  public getMatchStart(): Observable<void> {
     return this.getGameEvents().pipe(
       filter(event => event.type == "MatchStart"),
       map(() => null)
@@ -290,12 +290,29 @@ export class GameService implements OnDestroy {
       map(event => <ResultsEvent>event.event)
     )
   }
-
-  ngOnDestroy(): void {
+  private tidyUpGame() {
     for (let sub of this.subscriptions) {
       sub.unsubscribe();
     }
     this.subscriptions = [];
+
+    this.game = null;
+    this.players = [];
+
+    this.gameEventsOut$ = new ReplaySubject<DeclarationWhistGameEvents>(10);
+    this.trickEmitter = new ReplaySubject<Trick>(1);
+    this.tricks = 0;
+    this.currentTurnEmitter = new ReplaySubject<DeclarationWhistPlayer>(1);
+    this.currentRoundEmitter = new BehaviorSubject<number>(0);
+    this.roundInProgressEmittier = new BehaviorSubject<boolean>(false);
+
+    this.currentTrick = null;
+
+    this.rounds = 0;
+  }
+
+  ngOnDestroy(): void {
+    this.tidyUpGame();
   }
 
 

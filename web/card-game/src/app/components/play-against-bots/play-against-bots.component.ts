@@ -48,6 +48,8 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
     this.playerCards$ = this.player.cards$.asObservable();
     this.validBids$ = this.player.validBids$.asObservable();
 
+    //TODO either/and see if a game is in progress, and connect to it (with mechanism to re-emit various observables?) 
+    //or ensure that creating a new game always ends an existing game
     this.game.createDeclarationWhist(this.players, 3);
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event)));

@@ -91,7 +91,7 @@ export class LocalDeclarationWhist { //implements IGame
     //main interface for the world to watch the game
     public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
 
-    constructor(public players: DeclarationWhistPlayer[], private bidFirst: number, private verbose: boolean = true) {
+    constructor(public players: DeclarationWhistPlayer[], private bidFirst: number, private verbose: boolean = false) {
         let i = 0;
         for (let player of this.players) {
             this.playerInfos.push(new PlayerInfo(player, i));
