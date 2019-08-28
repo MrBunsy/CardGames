@@ -44,7 +44,7 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
       this.player.createPlayer()
     ];
 
-    this.playerState$ = this.player.playerState$.asObservable().pipe(tap(state => console.log(state)));
+    this.playerState$ = this.player.playerState$.asObservable().pipe(tap(state => console.log("PlayerState: " + state)));
     this.playerCards$ = this.player.cards$.asObservable();
     this.validBids$ = this.player.validBids$.asObservable();
 

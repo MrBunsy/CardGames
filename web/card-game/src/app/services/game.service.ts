@@ -14,6 +14,8 @@ class PlayerWithInfo {
 
   public nextRound() {
     this.cards = 13;
+    this.tricksWon = 0;
+    this.turnToPlay = false;
   }
 }
 /**
@@ -127,7 +129,7 @@ export class GameService implements OnDestroy {
       this.players.push(new PlayerWithInfo(player));
     }
 
-    this.game = new LocalDeclarationWhist(players, this.deckService.getDeck(), Math.floor(Math.random()*this.players.length), true);
+    this.game = new LocalDeclarationWhist(players, Math.floor(Math.random()*this.players.length), true);
 
     //isn't there a thing to make an observable hot? shouldn't we use that?
     this.subscriptions.push(this.game.gameEvents.asObservable().pipe(
@@ -137,7 +139,7 @@ export class GameService implements OnDestroy {
         if (this.isEventFromLocalPlayer(event)) {
           return of(event)
         } else {
-          return of(event).pipe(delay(1000))
+          return of(event).pipe(delay(10))
         }
       }
       )
@@ -159,7 +161,10 @@ export class GameService implements OnDestroy {
       console.warn("No game created yet");
       return;
     }
-    this.game.start();
+    for(let player of this.players){
+      player.nextRound();
+    }
+    this.game.start(this.deckService.getDeck());
   }
 
   private _getPlayerCardCounts(): number[] {

@@ -91,7 +91,7 @@ export class LocalDeclarationWhist { //implements IGame
     //main interface for the world to watch the game
     public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
 
-    constructor(public players: DeclarationWhistPlayer[], private deck: Deck, private bidFirst: number, private verbose: boolean = false) {
+    constructor(public players: DeclarationWhistPlayer[], private bidFirst: number, private verbose: boolean = true) {
         let i = 0;
         for (let player of this.players) {
             this.playerInfos.push(new PlayerInfo(player, i));
@@ -104,12 +104,16 @@ export class LocalDeclarationWhist { //implements IGame
     /**
      * Start a match. works for first match or next match
      */
-    public start() {
+    public start(deck: Deck) {
         //reset various counters
         for (let player of this.playerInfos) {
             player.nextRound();
         }
-        this.deck.deal(this.players);
+        this.bids = [];
+        this.tricks = [];
+        this.trumps = null;
+
+        deck.deal(this.players);
         this.gameEvents.next({ type: "MatchStart", event: null });
         this.players[this.bidFirst].declareBid([]).pipe(first()).subscribe(
             bid => this.playerBid({ playerIndex: this.bidFirst, bid: bid, player: this.players[this.bidFirst] })
@@ -277,6 +281,12 @@ export class LocalDeclarationWhist { //implements IGame
                 topScore = player.score;
                 winner = player;
             }
+        }
+        //set up the next round's first bidder
+        let winnerIndex = this.playerInfos.indexOf(winner);
+        this.bidFirst = winnerIndex;
+        if (this.verbose) {
+            console.log("Player " + winnerIndex + ": " + winner.player.name + " won the round");
         }
 
         this.gameEvents.next({ type: "MatchFinished", event: { players: this.playerInfos } })

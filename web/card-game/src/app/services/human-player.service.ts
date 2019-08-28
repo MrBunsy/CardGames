@@ -54,10 +54,10 @@ export class HumanPlayerService implements OnDestroy {
     //TODO clear subs at end of a match?
 
     //parrot out the bids
-    this.player.validBids$.asObservable().pipe(first()).subscribe(validBids => this.needToChooseBid(validBids));
+    this.playerSubscriptions.push(this.player.validBids$.asObservable().subscribe(validBids => this.needToChooseBid(validBids)));
 
     //and trumps
-    this.player.chooseTrumps$.asObservable().pipe(first()).subscribe(() => this.needToChooseTrumps());
+    this.playerSubscriptions.push(this.player.chooseTrumps$.asObservable().subscribe(() => this.needToChooseTrumps()));
 
     this.playerSubscriptions.push(this.player.validCardsToPlay$.subscribe(validCards => this.needToChooseCard(validCards)));
 

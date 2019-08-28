@@ -83,7 +83,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
         //must ensure we choose a valid count
 
         for (let i = 0; i <= 13; i++) {
-            if (i + totalTrickEstimates != 13) {
+            if ((otherEstimates.length != 3) || i + totalTrickEstimates != 13) {
                 validBids.push(i);
             }
         }
