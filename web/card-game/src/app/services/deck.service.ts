@@ -21,28 +21,5 @@ export class DeckService {
 
   }
 
-  public suitValue(suit: Suit): number {
-    switch (suit) {
-      case "Clubs":
-        return 0;
-      case "Diamonds":
-        return 1;
-      case "Hearts":
-        return 2;
-      case "Spades":
-        return 3;
-    }
-  }
-
-  private cardValue(card: Card, groupSuits: boolean): number {
-    if (groupSuits) {
-      return card.value + 13 * this.suitValue(card.suit);
-    } else {
-      return card.value * 4 + this.suitValue(card.suit);
-    }
-  }
-
-  public sort(cards: Card[], groupSuits: boolean = true) {
-    return cards.sort((cardA, cardB) => this.cardValue(cardA, groupSuits) - this.cardValue(cardB, groupSuits))
-  }
+  
 }

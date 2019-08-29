@@ -41,34 +41,7 @@ export class Card {
         return this.valueLookup[this.value] + this.suit.substring(0, 1);
     }
 
-    /**
-     * TODO find somewhere better to store useful stuff like this
-     * @param cards 
-     */
-    public static getSuitCount(cards: Card[]): Map<Suit, number> {
-        let count = new Map<Suit, number>();
-        for (let suit of suitArray) {
-            count[suit] = 0;
-        }
-        for (let card of cards) {
-            count[card.suit]++;
-        }
-
-        return count;
-    }
-
-    public static getCardsInSuits(cards: Card[]): Map<Suit, Card[]> {
-        let sortedCards = new Map<Suit, Card[]>();
-        for (let suit of suitArray) {
-            sortedCards[suit] = [];
-        }
-
-        for (let card of cards) {
-            sortedCards[card.suit].push(card);
-        }
-
-        return sortedCards;
-    }
+   
 
     public equals(other: Card): boolean {
         return other.value == this.value && other.suit == this.suit && other.faceUp == this.faceUp;

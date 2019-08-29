@@ -1,6 +1,7 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { Card } from 'src/app/models/card';
 import { DeckService } from 'src/app/services/deck.service';
+import { Deck } from 'src/app/models/deck';
 
 class DrawableCard {
   constructor(public card: Card, public clickable: boolean, public highlight: boolean) {
@@ -50,7 +51,7 @@ export class HandComponent implements OnInit, OnChanges {
       return;
     }
     // let newDrawableCards = [];
-    let cards = this.deckService.sort(this.cards.slice());
+    let cards = Deck.sort(this.cards.slice());
 
     let i = 0;
     for (let card of cards) {

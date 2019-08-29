@@ -4,6 +4,7 @@ import { LocalDeclarationWhist, DeclarationWhistGameEvents } from 'src/app/model
 import { DeckService } from 'src/app/services/deck.service';
 import { Subscription, Observable } from 'rxjs';
 import { GameService } from 'src/app/services/game.service';
+import { CleverBot } from 'src/app/models/clever-bot';
 
 @Component({
   selector: 'app-play-bots',
@@ -30,7 +31,7 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
       new Moron("Ted"),
       new Moron("Bill"),
       new Moron("Steve"),
-      new Moron("Bob")
+      new CleverBot("Clever Bob")
     ];
 
     this.game.createDeclarationWhist(this.players, 200);

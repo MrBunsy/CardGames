@@ -1,4 +1,4 @@
-import { Card, suitArray } from './card';
+import { Card, suitArray, Suit } from './card';
 import shuffle from '../misc';
 import { CardPlayer } from './player';
 export class Deck {
@@ -48,6 +48,56 @@ export class Deck {
             players[i].dealHand(hands[i]);
         }
 
+    }
+
+    private static suitValue(suit: Suit): number {
+        switch (suit) {
+            case "Clubs":
+                return 0;
+            case "Diamonds":
+                return 1;
+            case "Hearts":
+                return 2;
+            case "Spades":
+                return 3;
+        }
+    }
+
+    private static cardValue(card: Card, groupSuits: boolean): number {
+        if (groupSuits) {
+            return card.value + 13 * Deck.suitValue(card.suit);
+        } else {
+            return card.value * 4 + Deck.suitValue(card.suit);
+        }
+    }
+
+    public static sort(cards: Card[], groupSuits: boolean = true): Card[] {
+        return cards.sort((cardA, cardB) => Deck.cardValue(cardA, groupSuits) - Deck.cardValue(cardB, groupSuits))
+    }
+    
+    public static getSuitCount(cards: Card[]): Map<Suit, number> {
+        let count = new Map<Suit, number>();
+        for (let suit of suitArray) {
+            count[suit] = 0;
+        }
+        for (let card of cards) {
+            count[card.suit]++;
+        }
+
+        return count;
+    }
+
+    public static getCardsInSuits(cards: Card[]): Map<Suit, Card[]> {
+        let sortedCards = new Map<Suit, Card[]>();
+        for (let suit of suitArray) {
+            sortedCards[suit] = [];
+        }
+
+        for (let card of cards) {
+            sortedCards[card.suit].push(card);
+        }
+
+        return sortedCards;
     }
 
 }

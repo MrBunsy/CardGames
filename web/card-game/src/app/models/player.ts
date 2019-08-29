@@ -1,8 +1,9 @@
 import { Card, Suit, suitArray } from './card';
 import { Game } from './game';
 import { Observable, of, ReplaySubject, Subject } from 'rxjs';
-import { BidEvent, CardInTrickEvent, TrumpsEvent } from './declaration-whist';
+import { BidEvent, CardInTrickEvent, TrumpsEvent, Trick } from './declaration-whist';
 import { tap, map } from 'rxjs/operators';
+import { Deck } from './deck';
 
 export interface CardPlayer {
     dealHand(cards: Card[]);
@@ -12,8 +13,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
 
     name: string;
 
-    // getCards(): Observable<Card[]>;
-    // getBid(): Observable<number>;
+    startRound(allPlayers: DeclarationWhistPlayer[]);
 
     /**
      * Get our estimated number of tricks
@@ -24,13 +24,13 @@ export interface DeclarationWhistPlayer extends CardPlayer {
     /**
      * This player's bid was highest, they get to choose trumps
      */
-    chooseTrumps(): Observable<Suit>;
+    chooseTrumps(otherBids: BidEvent[]): Observable<Suit>;
 
     /**
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    playCard(trick: CardInTrickEvent[]): Observable<Card>;
+    playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card>;
 }
 
 export class LocalHuman implements DeclarationWhistPlayer {
@@ -63,9 +63,9 @@ export class LocalHuman implements DeclarationWhistPlayer {
         this.cards = cards;
     }
 
-    // public getCards(): Observable<Card[]> {
-    //     return this.cards$.asObservable();
-    // }
+    public startRound(allPlayers: DeclarationWhistPlayer[]){
+        //all up to the actual human to track things
+    }
 
     public getBid(): Observable<number>{
         return this.bidOutput$.asObservable();
@@ -96,7 +96,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
     /**
      * Used by the game
      */
-    chooseTrumps(): Observable<Suit> {
+    chooseTrumps(otherBids: BidEvent[]): Observable<Suit> {
         this.chooseTrumps$.next();
 
         return this.trumps$;
@@ -109,12 +109,12 @@ export class LocalHuman implements DeclarationWhistPlayer {
         this.cards$.next(this.cards);
     }
 
-    playCard(trick: CardInTrickEvent[]): Observable<Card> {
+    playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card> {
         let validCards = this.cards.slice();
         if (trick.length > 0) {
             //suit to follow
             let followSuit = trick[0].card.suit;
-            let suitCount = Card.getCardsInSuits(this.cards);
+            let suitCount = Deck.getCardsInSuits(this.cards);
 
             if (suitCount[followSuit].length > 0) {
                 //have to follow suit
@@ -150,20 +150,16 @@ export class Moron implements DeclarationWhistPlayer {
         //moron is too dumb to care
     }
 
-    // public getCards(): Observable<Card[]> {
-    //     return this.cards$.asObservable();
-    //     // .pipe(
-    //     //     //replace with face-down cards
-    //     //     map(cards => cards.map(card => new Card(null, 0, false)))
-    //     // );
-    // }
+    public startRound(allPlayers: DeclarationWhistPlayer[]){
+        //too stupid to care about tracking other players
+    }
 
     /**
      * in ideal circumstances, how many tricks do we think we can win?
      */
     private preferedTrickEstimate(): number {
 
-        let suitCount = Card.getSuitCount(this.cards);
+        let suitCount = Deck.getSuitCount(this.cards);
 
         //random guess!
         return Math.round(Math.random() * 13);
@@ -196,13 +192,13 @@ export class Moron implements DeclarationWhistPlayer {
     /**
      * This player's estimate was highest, they get to choose trumps
      */
-    public chooseTrumps(): Observable<Suit> {
+    public chooseTrumps(otherBids: BidEvent[]): Observable<Suit> {
 
         let trumps: Suit = "Clubs";
         let highestCount = 0;
 
         //choose suit with most cards
-        let count = Card.getSuitCount(this.cards);
+        let count = Deck.getSuitCount(this.cards);
         for (let suit of suitArray) {
             if (count[suit] > highestCount) {
                 highestCount = count[suit];
@@ -218,7 +214,7 @@ export class Moron implements DeclarationWhistPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    public playCard(trick: CardInTrickEvent[]): Observable<Card> {
+    public playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card> {
 
         let cardIndex = 0;
 
@@ -228,7 +224,7 @@ export class Moron implements DeclarationWhistPlayer {
         } else {
             //have to follow suit if we can
             let suit = trick[0].card.suit;
-            let sortedCards = Card.getCardsInSuits(this.cards);
+            let sortedCards = Deck.getCardsInSuits(this.cards);
             if (sortedCards[suit].length > 0) {
                 let wantCard = sortedCards[suit][Math.floor(Math.random() * sortedCards[suit].length)];
                 cardIndex = this.cards.lastIndexOf(wantCard);

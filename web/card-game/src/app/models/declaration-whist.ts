@@ -108,6 +108,8 @@ export class LocalDeclarationWhist { //implements IGame
         //reset various counters
         for (let player of this.playerInfos) {
             player.nextRound();
+            //let any intelligent bots set up all their tracking
+            player.player.startRound(this.players);
         }
         this.bids = [];
         this.tricks = [];
@@ -150,7 +152,7 @@ export class LocalDeclarationWhist { //implements IGame
                 }
             }
 
-            highestBidder.chooseTrumps().pipe(first()).subscribe(trumps => this.trumpsChosen(trumps, highestBidder));
+            highestBidder.chooseTrumps(this.bids).pipe(first()).subscribe(trumps => this.trumpsChosen(trumps, highestBidder));
 
 
         }
@@ -170,9 +172,15 @@ export class LocalDeclarationWhist { //implements IGame
             console.log("Trick started by " + player.name);
         }
 
+        let lastTrick: Trick = null;
+        if (this.tricks.length > 0) {
+            lastTrick = this.tricks[this.tricks.length - 1];
+        }
+
         this.tricks.push(new Trick(player));
 
-        player.playCard([]).pipe(first()).subscribe(card => this.playCard({ card: card, player: player, playerIndex: this.players.indexOf(player) }))
+
+        player.playCard([], lastTrick).pipe(first()).subscribe(card => this.playCard({ card: card, player: player, playerIndex: this.players.indexOf(player) }))
     }
 
     /**
@@ -196,8 +204,12 @@ export class LocalDeclarationWhist { //implements IGame
         if (currentTrick.cards.length < 4) {
             //more cards to play
             let nextPlayer = (card.playerIndex + 1) % this.players.length;
+            let lastTrick: Trick = null;
+            if (this.tricks.length > 0) {
+                lastTrick = this.tricks[this.tricks.length - 1];
+            }
 
-            this.players[nextPlayer].playCard(currentTrick.cards).pipe(first()).subscribe(card => this.playCard({ card: card, player: this.players[nextPlayer], playerIndex: nextPlayer }))
+            this.players[nextPlayer].playCard(currentTrick.cards, lastTrick).pipe(first()).subscribe(card => this.playCard({ card: card, player: this.players[nextPlayer], playerIndex: nextPlayer }))
         } else {
             this.endTrick();
         }
