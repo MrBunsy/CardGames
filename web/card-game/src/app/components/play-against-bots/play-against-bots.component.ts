@@ -7,6 +7,7 @@ import { Suit, Card } from 'src/app/models/card';
 import { HumanPlayerService, PlayerState } from 'src/app/services/human-player.service';
 import { tap } from 'rxjs/operators';
 import { GameService } from 'src/app/services/game.service';
+import { CleverBot } from 'src/app/models/clever-bot';
 
 @Component({
   selector: 'app-play-against-bots',
@@ -38,9 +39,12 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
 
 
     this.players = [
-      new Moron("Ted"),
-      new Moron("Bill"),
-      new Moron("Steve"),
+      // new Moron("Ted"),
+      // new Moron("Bill"),
+      // new Moron("Steve"),
+      new CleverBot("Clever Ted"),
+      new CleverBot("Clever Bill"),
+      new CleverBot("Clever Steve"),
       this.player.createPlayer()
     ];
 

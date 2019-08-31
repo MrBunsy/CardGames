@@ -70,7 +70,7 @@ export class CleverBot implements DeclarationWhistPlayer {
         let sorted: Map<Suit, Card[]> = Deck.getCardsInSuits(this.cards);
 
         //random guess!
-        return Math.round(Math.random() * 13);
+        return Math.round(Math.random() * 5);
 
     }
 
@@ -158,6 +158,12 @@ export class CleverBot implements DeclarationWhistPlayer {
      * @param trick 
      */
     private possibleToWinTrick(trick: Card[], card: Card = null): boolean {
+
+        if (trick.length == 0) {
+            //TODO check card against card-counted bots
+            return true;
+        }
+
         let validCards = this.cards.slice();
 
         let trumped = false;
@@ -233,6 +239,9 @@ export class CleverBot implements DeclarationWhistPlayer {
             }
             let winnerIndex = this.allPlayers.findIndex(player => player.player == previousTrick.winner);
             this.allPlayers[winnerIndex].tricksWon++;
+            if (previousTrick.winner == this) {
+                this.tricksWon++;
+            }
         }
 
         let cardIndex = 0;
@@ -266,17 +275,18 @@ export class CleverBot implements DeclarationWhistPlayer {
         let valuedCards = validCards.sort((a, b) => this.probableValueOfCard(a) - this.probableValueOfCard(b));
 
         let playCard: Card;
-        if (playingFirst) {
+        // if (playingFirst) {
 
-            if (this.tricksWon != this.bid) {
-                //either we're below the bid and trying to reach it, or we've overshot and might as well get the points
-                playCard = valuedCards[validCards.length - 1];
-            } else {
-                playCard = valuedCards[0];
-            }
+        //     if (this.tricksWon != this.bid) {
+        //         //either we're below the bid and trying to reach it, or we've overshot and might as well get the points
+        //         playCard = valuedCards[validCards.length - 1];
+        //     } else {
+        //         playCard = valuedCards[0];
+        //     }
 
 
-        } else if (this.possibleToWinTrick(trick.map(trick => trick.card))) {
+        // } else 
+        if (this.possibleToWinTrick(trick.map(trick => trick.card))) {
             //we have a chance to win this trick
 
             //sort cards in order of probability of winning
@@ -297,10 +307,15 @@ export class CleverBot implements DeclarationWhistPlayer {
         } else {
             //we can't win even if we wanted to, throw something away
 
+            //TODO take into account cards worth protecting, and throw away anything that's not protecting anythign else first
+            if (this.tricksWon != this.bid) {
+                //want to win overall, so lose our worst card
+                playCard = valuedCards[0];
 
-
-            //choose our worst card
-            playCard = valuedCards[0];
+            } else {
+                //want to lose, so ditch the best cards
+                playCard = valuedCards[validCards.length - 1];
+            }
 
         }
 

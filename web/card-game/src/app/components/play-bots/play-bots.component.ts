@@ -34,7 +34,7 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
       new CleverBot("Clever Bob")
     ];
 
-    this.game.createDeclarationWhist(this.players, 1000, -1, true);
+    this.game.createDeclarationWhist(this.players, 200, -1, true);
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => {
       this.log.push(event);
