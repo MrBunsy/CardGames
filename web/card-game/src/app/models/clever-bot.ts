@@ -119,31 +119,29 @@ export class CleverBot implements DeclarationWhistPlayer {
      * @param trick array of tupes of who (player index) played what
      */
     public playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card> {
+
         if (previousTrick != null) {
+            //update all our tracking of whatnot
             for (let card of previousTrick.cards) {
                 this.allPlayers[card.playerIndex].playedCards.push(card.card);
             }
+            let winnerIndex = this.allPlayers.findIndex(player => player.player == previousTrick.winner);
+            this.allPlayers[winnerIndex].tricksWon++;
         }
 
         let cardIndex = 0;
+        let validCards = this.cards.slice();
 
-        if (trick.length == 0) {
-            //we play first
-            cardIndex = Math.floor(Math.random() * this.cards.length);
-        } else {
+        if (trick.length > 0) {
             //have to follow suit if we can
             let suit = trick[0].card.suit;
             let sortedCards = Deck.getCardsInSuits(this.cards);
             if (sortedCards[suit].length > 0) {
-                let wantCard = sortedCards[suit][Math.floor(Math.random() * sortedCards[suit].length)];
-                cardIndex = this.cards.lastIndexOf(wantCard);
-            } else {
-                //can't follow suit
-                cardIndex = Math.floor(Math.random() * this.cards.length);
-            }
-        }
+                validCards = sortedCards[suit].slice();
+            } //else can't follow suit
+        }//else we play first
 
-        let card = this.cards[cardIndex];
+        let card = validCards[cardIndex];
 
         this.cards.splice(cardIndex, 1);
         return of(card);

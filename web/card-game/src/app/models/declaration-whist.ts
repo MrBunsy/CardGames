@@ -205,8 +205,9 @@ export class LocalDeclarationWhist { //implements IGame
             //more cards to play
             let nextPlayer = (card.playerIndex + 1) % this.players.length;
             let lastTrick: Trick = null;
-            if (this.tricks.length > 0) {
-                lastTrick = this.tricks[this.tricks.length - 1];
+            if (this.tricks.length > 1) {
+                //top trick is current, one below is the previous round (if any)
+                lastTrick = this.tricks[this.tricks.length - 2];
             }
 
             this.players[nextPlayer].playCard(currentTrick.cards, lastTrick).pipe(first()).subscribe(card => this.playCard({ card: card, player: this.players[nextPlayer], playerIndex: nextPlayer }))
