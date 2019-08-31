@@ -34,7 +34,7 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
       new CleverBot("Clever Bob")
     ];
 
-    this.game.createDeclarationWhist(this.players, 200);
+    this.game.createDeclarationWhist(this.players, 1000, -1, true);
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => {
       this.log.push(event);
@@ -51,11 +51,11 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    
+
   }
 
-  private scrollLog(){
-    if(this.logDiv && this.logDiv.nativeElement){
+  private scrollLog() {
+    if (this.logDiv && this.logDiv.nativeElement) {
       this.logDiv.nativeElement.scrollTop = this.logDiv.nativeElement.scrollHeight;
     }
   }

@@ -163,7 +163,13 @@ export class LocalDeclarationWhist { //implements IGame
         if (this.verbose) {
             console.log("Trumps are " + suit + ". Chosen by " + player.name);
         }
-        this.gameEvents.next({ type: "Trumps", event: { player: player, playerIndex: this.players.lastIndexOf(player), suit: suit } })
+
+        let trumpsEvent: TrumpsEvent = { player: player, playerIndex: this.players.lastIndexOf(player), suit: suit };
+
+        for (let player of this.players) {
+            player.trumpsChosen(trumpsEvent);
+        }
+        this.gameEvents.next({ type: "Trumps", event: trumpsEvent });
         this.startTrick(player);
     }
 

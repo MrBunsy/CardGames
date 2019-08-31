@@ -129,7 +129,7 @@ export class GameService implements OnDestroy {
    * @param eventInterval time, in ms, each event is artifically delayed for
    * @param localPlayerIndex 
    */
-  public createDeclarationWhist(players: DeclarationWhistPlayer[], eventInterval: number = 1000 , localPlayerIndex: number = -1) {
+  public createDeclarationWhist(players: DeclarationWhistPlayer[], eventInterval: number = 1000 , localPlayerIndex: number = -1, verbose: boolean = false) {
     this.tidyUpGame();
     this.eventInterval = eventInterval;
     this.localPlayerIndex = localPlayerIndex;
@@ -138,7 +138,7 @@ export class GameService implements OnDestroy {
       this.players.push(new PlayerWithInfo(player));
     }
 
-    this.game = new LocalDeclarationWhist(players, Math.floor(Math.random() * this.players.length));
+    this.game = new LocalDeclarationWhist(players, Math.floor(Math.random() * this.players.length), verbose);
 
     //isn't there a thing to make an observable hot? shouldn't we use that?
     this.subscriptions.push(this.game.gameEvents.asObservable().pipe(

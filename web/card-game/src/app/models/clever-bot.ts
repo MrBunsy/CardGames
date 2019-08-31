@@ -134,8 +134,12 @@ export class CleverBot implements DeclarationWhistPlayer {
      * Best guess at winning by playing a specific card
      * @param card 
      */
-    private probablityToWinTrick(card: Card):number{
-        return 0;
+    private probablityToWinTrick(trick: CardInTrickEvent[], card: Card): number {
+        if (!this.possibleToWinTrick(trick.map(trick => trick.card), card)) {
+            return 0;
+        }
+        //TODO
+        return card.value;
     }
 
     /**
@@ -143,19 +147,21 @@ export class CleverBot implements DeclarationWhistPlayer {
      * Intended to work out which card to get rid of when we can't or don't want to win
      * @param card 
      */
-    private probableValueOfCard(card: Card): number{
-        return 0;
+    private probableValueOfCard(card: Card): number {
+        //TODO take into account who's run out of a suit and trumps and card distribution
+
+        return card.value + (card.suit == this.trumps.suit ? 13 : 0);
     }
 
     /**
      * Simplistic test for possible to win the trick, if no-one else plays to beat us
      * @param trick 
      */
-    private possibleToWin(trick: CardInTrickEvent[]): boolean {
+    private possibleToWinTrick(trick: Card[], card: Card = null): boolean {
         let validCards = this.cards.slice();
 
         let trumped = false;
-        for (let card of trick.map(trick => trick.card)) {
+        for (let card of trick) {
             if (card.suit == this.trumps.suit) {
                 trumped = true;
                 break;
@@ -167,7 +173,7 @@ export class CleverBot implements DeclarationWhistPlayer {
 
         if (trick.length > 0) {
             //have to follow suit if we can
-            trickSuit = trick[0].card.suit;
+            trickSuit = trick[0].suit;
             let sortedCards = Deck.getCardsInSuits(this.cards);
             if (sortedCards[trickSuit].length > 0) {
                 validCards = sortedCards[trickSuit].slice();
@@ -176,32 +182,40 @@ export class CleverBot implements DeclarationWhistPlayer {
             }
         }//else we play first
 
+
+        if (card == null) {
+            //we're not testing a specific card, just generally if its possible to win, continue tests below assuming our best valid card
+            card = validCards[validCards.length - 1];
+        }
+
         if (followingSuit) {
             if (trumped && trickSuit != this.trumps.suit) {
                 //we have to follow suit, but someone else has trumped it.
                 return false;
             }
-            //do we have a high enough card?
-            let ourHighestCard = validCards[validCards.length - 1];
-            //sorted list of cards that could win the trick
-            let relevantTrickCards: Card[] = Deck.sort(trick.map(trick => trick.card).filter(card => card.suit == trickSuit || card.suit == this.trumps.suit));
-
-            //our best card is better than the current best card
-            return relevantTrickCards[relevantTrickCards.length - 1].value < ourHighestCard.value;
-
-        } else {
-            let ourBestTrump = this.ourBestTrump();
-            //do we have a (high enough) trump?
-            if (ourBestTrump == null) {
-                //we don't have any trumps
+            if (trickSuit != card.suit) {
+                //we have to follow suit, but the test card isn't the right suit
                 return false;
             }
-            let trumpsInTrick = Deck.sort(trick.map(trick => trick.card).filter(card => card.suit == this.trumps.suit));
+            //sorted list of cards that could win the trick
+            let relevantTrickCards: Card[] = Deck.sort(trick.filter(card => card.suit == trickSuit || card.suit == this.trumps.suit));
+
+            //our best card is better than the current best card
+            return relevantTrickCards[relevantTrickCards.length - 1].value < card.value;
+
+        } else {
+            //not following suit
+            if (card.suit != this.trumps.suit) {
+                //not a trump, no chance
+                return false;
+            }
+
+            let trumpsInTrick = Deck.sort(trick.filter(card => card.suit == this.trumps.suit));
 
             if (trumpsInTrick.length == 0) {
                 return true;
             }
-            return trumpsInTrick[trumpsInTrick.length - 1].value < ourBestTrump.value;
+            return trumpsInTrick[trumpsInTrick.length - 1].value < card.value;
 
         }
     }
@@ -234,6 +248,7 @@ export class CleverBot implements DeclarationWhistPlayer {
 
         let wantToWin = this.tricksWon < this.bid;
         let followingSuit = true;
+        let playingFirst = false;
 
         if (trick.length > 0) {
             //have to follow suit if we can
@@ -244,16 +259,55 @@ export class CleverBot implements DeclarationWhistPlayer {
             } else {
                 followingSuit = false;
             }
-        }//else we play first
-
-        if (wantToWin && (followingSuit || !followingSuit && !trumped)) {
-            //we have a chance to win this trick
+        } else {
+            playingFirst = true;
         }
 
-        let card = validCards[cardIndex];
+        let valuedCards = validCards.sort((a, b) => this.probableValueOfCard(a) - this.probableValueOfCard(b));
+
+        let playCard: Card;
+        if (playingFirst) {
+
+            if (this.tricksWon != this.bid) {
+                //either we're below the bid and trying to reach it, or we've overshot and might as well get the points
+                playCard = valuedCards[validCards.length - 1];
+            } else {
+                playCard = valuedCards[0];
+            }
+
+
+        } else if (this.possibleToWinTrick(trick.map(trick => trick.card))) {
+            //we have a chance to win this trick
+
+            //sort cards in order of probability of winning
+            let bestCards = validCards.sort((a, b) => this.probablityToWinTrick(trick, a) - this.probablityToWinTrick(trick, b));
+            let bestCard = bestCards[bestCards.length - 1];
+            let worstCard = bestCards[0];
+
+            //duplication of logic here, TODO refactor
+            //try to win or try to lose based on how many tricks we've won
+            if (this.tricksWon != this.bid) {
+                //either we're below the bid and trying to reach it, or we've overshot and might as well get the points
+                playCard = bestCard;
+            } else {
+                playCard = worstCard;
+            }
+
+
+        } else {
+            //we can't win even if we wanted to, throw something away
+
+
+
+            //choose our worst card
+            playCard = valuedCards[0];
+
+        }
+
+        cardIndex = this.cards.findIndex(card => card.equals(playCard));
 
         this.cards.splice(cardIndex, 1);
-        return of(card);
+        return of(playCard);
 
     }
 }

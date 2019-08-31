@@ -27,6 +27,12 @@ export interface DeclarationWhistPlayer extends CardPlayer {
     chooseTrumps(otherBids: BidEvent[]): Observable<Suit>;
 
     /**
+     * Inform player of trumps and who chose
+     * @param trumps 
+     */
+    trumpsChosen(trumps: TrumpsEvent);
+
+    /**
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
@@ -61,6 +67,10 @@ export class LocalHuman implements DeclarationWhistPlayer {
     dealHand(cards: Card[]) {
         this.cards$.next(cards);
         this.cards = cards;
+    }
+
+    trumpsChosen(trumps: TrumpsEvent){
+        //human player can see this themselves
     }
 
     public startRound(allPlayers: DeclarationWhistPlayer[]){
