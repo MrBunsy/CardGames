@@ -129,7 +129,7 @@ export class GameService implements OnDestroy {
    * @param eventInterval time, in ms, each event is artifically delayed for
    * @param localPlayerIndex 
    */
-  public createDeclarationWhist(players: DeclarationWhistPlayer[], eventInterval: number = 1000 , localPlayerIndex: number = -1, verbose: boolean = false) {
+  public createDeclarationWhist(players: DeclarationWhistPlayer[], eventInterval: number = 1000, localPlayerIndex: number = -1, verbose: boolean = false) {
     this.tidyUpGame();
     this.eventInterval = eventInterval;
     this.localPlayerIndex = localPlayerIndex;
@@ -278,7 +278,12 @@ export class GameService implements OnDestroy {
   }
 
   public getCurrentTrick(): Observable<Trick> {
-    return this.trickEmitter.asObservable();
+
+    let start = this.getMatchStart().pipe(
+      map(() => null)
+    )
+
+    return merge(this.trickEmitter.asObservable(), start)
   }
 
   /**

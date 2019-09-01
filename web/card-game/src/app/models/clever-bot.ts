@@ -291,16 +291,17 @@ export class CleverBot implements DeclarationWhistPlayer {
 
             //sort cards in order of probability of winning
             let bestCards = validCards.sort((a, b) => this.probablityToWinTrick(trick, a) - this.probablityToWinTrick(trick, b));
-            let bestCard = bestCards[bestCards.length - 1];
-            let worstCard = bestCards[0];
+            let mostLikelyToWin = bestCards[bestCards.length - 1];
+            let leastLikelyToWin = bestCards[0];
 
             //duplication of logic here, TODO refactor
             //try to win or try to lose based on how many tricks we've won
             if (this.tricksWon != this.bid) {
                 //either we're below the bid and trying to reach it, or we've overshot and might as well get the points
-                playCard = bestCard;
+                playCard = mostLikelyToWin;
             } else {
-                playCard = worstCard;
+                //TODO improve, actually want to play the highest VALUE card which won't win us hte trick
+                playCard = leastLikelyToWin;
             }
 
 

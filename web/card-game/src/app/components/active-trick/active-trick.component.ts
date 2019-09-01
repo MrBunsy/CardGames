@@ -26,6 +26,7 @@ export class ActiveTrickComponent implements OnInit, OnDestroy {
   public cards: Card[];
   //card at the bottom of the trick
   public first: number;
+  public winner: string;
 
   private subs: Subscription[] = [];
 
@@ -35,8 +36,12 @@ export class ActiveTrickComponent implements OnInit, OnDestroy {
       trick => {
         this.cards = [null, null, null, null];
         let foundFirst: boolean = false;
+        if (trick == null) {
+          this.winner = null;
+        }
         //if four cards, then this trick has been won
         if (trick != null && trick.winner == null) {//trick.cards.length < 4
+          this.winner = null;
           for (let card of trick.cards) {
             if (!foundFirst) {
               this.first = card.playerIndex;
@@ -44,6 +49,9 @@ export class ActiveTrickComponent implements OnInit, OnDestroy {
             }
             this.cards[card.playerIndex] = card.card;
           }
+        } else if (trick != null && trick.winner != null) {
+          //show who won
+          this.winner = trick.winner.name;
         }
       }
     ));

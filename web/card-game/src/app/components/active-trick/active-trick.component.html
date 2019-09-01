@@ -1,1 +1,8 @@
-<trick [cards]="cards" [first]="first">
+<ng-container *ngIf="winner; else activeTrick">
+    <div class="winner">
+        {{winner}} won the trick
+    </div>
+</ng-container>
+<ng-template #activeTrick>
+    <trick [cards]="cards" [first]="first"> </trick>
+</ng-template>
