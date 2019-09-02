@@ -4,12 +4,12 @@
     background: darkgreen;
     display: grid;
 
-    grid-template-rows: 22% auto 22%;
+    grid-template-rows: 25% auto 25%;
     grid-template-columns: 20% auto 20%; 
     grid-template-areas:
     'topleft top topright'
     'left middle right'
-    'bottom bottom bottom';
+    'left bottom right';
 }
 
 .topPlayer{
