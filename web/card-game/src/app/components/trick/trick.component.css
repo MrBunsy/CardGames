@@ -4,11 +4,17 @@
     --card-height: 15vmin;
 }
 
+.trick-holder{
+    width:100%;
+    height:100%;
+    display: flex;
+}
+/* if the containing element is display flex, margin auto auto will centre vertically too */
 .trick{
     position: relative;
     width: calc(13.25vmin * 2);/*calc(var(--card-height) * 2);*/
     height: calc(13.25vmin * 2); /*calc(var(--card-height) * 2);*/
-    margin: auto;
+    margin: auto auto;
 }
 
 .left{
