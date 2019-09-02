@@ -4,7 +4,7 @@
     background: darkgreen;
     display: grid;
 
-    grid-template-rows: 20% auto 20%;
+    grid-template-rows: 22% auto 22%;
     grid-template-columns: 20% auto 20%; 
     grid-template-areas:
     'topleft top topright'
@@ -36,14 +36,21 @@
     grid-area: topleft;
 }
 
-.tricks{
+.trick-holder{
+    width:100%;
+    height:100%;
+    display: flex;
     grid-area: middle;
+} 
+/* if the containing element is display flex, margin auto auto will centre vertically too */
+
+.tricks{
     /* min-width:300px;
     min-height:300px; */
     /* padding: 150px 100px 200px 200px */
     /* padding: auto; */
     text-align: center;
-    padding:10%;
+    margin: auto auto;
 }
 
 

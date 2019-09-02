@@ -1,9 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { DeclarationWhistPlayer } from 'src/app/models/player';
-import { Observable, merge, combineLatest } from 'rxjs';
+import { Observable, merge, combineLatest, of } from 'rxjs';
 import { GameService } from 'src/app/services/game.service';
 import { PlayerState, HumanPlayerService } from 'src/app/services/human-player.service';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'card-table',
@@ -30,9 +30,11 @@ export class TableComponent implements OnInit {
   }
 
   ngOnInit() {
-    if (this.humanPlayerIndex == -1) {
+    if (this.humanPlayerIndex < 0) {
       //no human player, so no-one to choose bids and trumps
-      this.showTrick$ == this.roundRunning$;
+      this.showTrick$ = this.roundRunning$.pipe(tap(running => console.log("running: "+running)));
+      this.showBids$ = of(false);
+      this.showTrumps$ = of(false);
     } else {
       this.showTrick$ = combineLatest(this.roundRunning$, this.player.playerState$.asObservable()).pipe(
         map(([roundRunning, playerState]) => roundRunning && (playerState != "ChoosingBid" && playerState != "ChoosingTrumps"))
