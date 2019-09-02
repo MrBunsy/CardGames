@@ -32,7 +32,7 @@ export class TableComponent implements OnInit {
   ngOnInit() {
     if (this.humanPlayerIndex < 0) {
       //no human player, so no-one to choose bids and trumps
-      this.showTrick$ = this.roundRunning$.pipe(tap(running => console.log("running: "+running)));
+      this.showTrick$ = this.roundRunning$;
       this.showBids$ = of(false);
       this.showTrumps$ = of(false);
     } else {

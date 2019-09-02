@@ -12,7 +12,7 @@
       <active-trick *ngIf="showTrick$ | async"></active-trick>
       <bid *ngIf="showBids$ | async" [validBids]="validBids$ | async"></bid>
       <choose-trumps *ngIf="showTrumps$ | async"></choose-trumps>
-      <total-scores *ngIf="!(roundRunning$ | async)"></total-scores>
+      <total-scores *ngIf="!(roundRunning$ | async) && !(showBids$ | async) && !(showTrumps$ | async)"></total-scores>
     </div>
   </div>
 </div>
