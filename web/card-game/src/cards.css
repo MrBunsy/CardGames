@@ -1,5 +1,5 @@
 img.card {
-	width: 70px;
+	width: 9.5vmin;
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -85,7 +85,7 @@ img.card {
 .vhand-compact img.card 
 {
 	display: block; 
-	margin-top: -80px;
+	margin-top: -11vmin;
 	padding-right: 10px;
 }
 .vhand-compact.active-hand img.card:hover,

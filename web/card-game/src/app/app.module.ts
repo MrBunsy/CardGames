@@ -20,6 +20,7 @@ import { ActiveTrickComponent } from './components/active-trick/active-trick.com
 import { BidTrackerComponent } from './components/bid-tracker/bid-tracker.component';
 import { TrickComponent } from './components/trick/trick.component';
 import { TotalScoresComponent } from './components/total-scores/total-scores.component';
+import { TableComponent } from './components/table/table.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { TotalScoresComponent } from './components/total-scores/total-scores.com
     ActiveTrickComponent,
     BidTrackerComponent,
     TrickComponent,
-    TotalScoresComponent
+    TotalScoresComponent,
+    TableComponent
   ],
   imports: [
     BrowserModule,

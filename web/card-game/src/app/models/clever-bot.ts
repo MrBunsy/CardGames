@@ -27,6 +27,8 @@ export class CleverBot implements DeclarationWhistPlayer {
     // private otherPlayersPlayed: Map<DeclarationWhistPlayer, Card[]>;
     private allPlayers: PlayerInfo[];
 
+    // private tricks: 
+
     private tricksWon: number;
     private bid: number;
 
@@ -151,6 +153,34 @@ export class CleverBot implements DeclarationWhistPlayer {
         //TODO take into account who's run out of a suit and trumps and card distribution
 
         return card.value + (card.suit == this.trumps.suit ? 13 : 0);
+    }
+    private cardPlayedOrOurs(card: Card): boolean{
+        return false;
+    }   
+
+    /**
+     * 1 if the only higher cards are in our hand or have already been seen
+     * less than one if we're guessing
+     * @param card 
+     */
+    private chanceOfBeingHighestInSuit(card: Card): number {
+
+        if (card.value == 13) {
+            //this IS the highest card of its suit
+            return 1;
+        }
+
+        // let suitSorted = Deck.getCardsInSuits(this.cards);
+
+        //check to see if the next highest card is the highest
+        // for (let value = card.value + 1; value < 13; value++) {
+        if (this.chanceOfBeingHighestInSuit(new Card(card.suit, card.value + 1)) == 1) {
+            return 1;
+        }
+        // }
+        // if ()
+
+        //TODO take into accoutn card counting
     }
 
     /**

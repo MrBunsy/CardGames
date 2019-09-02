@@ -35,6 +35,10 @@ export class TrumpsEvent extends EventInfo {
     public suit: Suit;
 }
 
+export class TrickWonEvent extends EventInfo{
+    //player in event info was the winner
+}
+
 export class ResultsEvent {
     public players: PlayerScores[];
 }

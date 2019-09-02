@@ -1,0 +1,51 @@
+.table{
+    width:100%;
+    height:calc(100vh - 46px);
+    background: darkgreen;
+    display: grid;
+
+    grid-template-rows: 20% auto 20%;
+    grid-template-columns: 20% auto 20%; 
+    grid-template-areas:
+    'topleft top topright'
+    'left middle right'
+    'bottom bottom bottom';
+}
+
+.topPlayer{
+    grid-area: top;
+    text-align: center;
+}
+
+.leftPlayer{
+    grid-area: left;
+}
+
+.rightPlayer{
+    grid-area: right;
+    text-align: right;
+}
+
+.bottomPlayer{
+    grid-area: bottom;
+    text-align: center;
+    height:15vh;
+}
+
+.trumpTracker{
+    grid-area: topleft;
+}
+
+.tricks{
+    grid-area: middle;
+    /* min-width:300px;
+    min-height:300px; */
+    padding: 150px 100px 200px 200px
+}
+
+
+.tricks.centre{
+    width:1px;
+    height:1px;
+    margin: 50%;
+}
