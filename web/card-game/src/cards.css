@@ -1,5 +1,5 @@
 img.card {
-	width: 9.5vmin;
+	width: 12vmin;
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -57,7 +57,7 @@ img.card {
 	padding-top: 1vmin;
 }
 .hhand-compact img.card { 
-	margin-left: -6vmin;
+	margin-left: -9vmin;
 	padding-top: 1vmin;
 }
 /* .hhand-compact.active-hand img.card:hover { 
@@ -85,7 +85,7 @@ img.card {
 .vhand-compact img.card 
 {
 	display: block; 
-	margin-top: -11vmin;
+	margin-top: -14vmin;
 	padding-right: 10px;
 }
 .vhand-compact.active-hand img.card:hover,
