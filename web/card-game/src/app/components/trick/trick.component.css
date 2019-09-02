@@ -1,30 +1,44 @@
+:root{
+    --card-width: 9.5vmin;
+    /* --card-height: 13.25vmin; */
+    --card-height: 15vmin;
+}
+
 .trick{
     position: relative;
-    padding-left:35px;
+    width: calc(13.25vmin * 2);/*calc(var(--card-height) * 2);*/
+    height: calc(13.25vmin * 2); /*calc(var(--card-height) * 2);*/
+    margin: auto;
 }
 
 .left{
     position:absolute;
+    /* top:6.625vmin; */
     top:0px;
-    left:-30px;
-    transform: rotate(90deg);
+    left:8.5vmin;
+    padding-bottom:13.25vmin;
+    transform: rotate(-90deg);
 }
 
 .top{
     position:absolute;
-    top:-60px;
-    left:0px;
+    top:0px;
+    left:8.5vmin;
+    padding-bottom:13.25vmin;
 }
 
 .right{
     position:absolute;
     top:0px;
-    left:30px;
-    transform: rotate(-90deg);
+    left:8.5vmin;
+    padding-bottom:13.25vmin;
+    transform: rotate(90deg);
 }
 
 .bottom{
     position:absolute;
-    top:60px;
-    left:0px;
+    top:0px;
+    left:8.5vmin;
+    padding-bottom:13.25vmin;
+    transform: rotate(180deg);
 }
