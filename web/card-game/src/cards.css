@@ -25,7 +25,7 @@ img.card {
 	display: inline-block; 
 }
 .hhand img.card { 
-	padding-top: 10px;
+	padding-top: 1vmin;
 }
 .hhand.active-hand img.card:hover { 
 	padding-top: 0px;
@@ -54,11 +54,11 @@ img.card {
 }
 .hhand-compact img.card:first-child { 
 	margin-left: 0px;
-	padding-top: 10px;
+	padding-top: 1vmin;
 }
 .hhand-compact img.card { 
-	margin-left: -52px;
-	padding-top: 10px;
+	margin-left: -6vmin;
+	padding-top: 1vmin;
 }
 /* .hhand-compact.active-hand img.card:hover { 
 	padding-top: 0px;
@@ -67,7 +67,7 @@ img.card {
 
 .hhand-compact.active-hand img.card.highlight { 
 	padding-top: 0px;
-	padding-bottom: 10px;
+	padding-bottom: 1vmin;
 }
 
 /*

@@ -31,6 +31,7 @@ export class TableComponent implements OnInit {
 
   ngOnInit() {
     if (this.humanPlayerIndex == -1) {
+      //no human player, so no-one to choose bids and trumps
       this.showTrick$ == this.roundRunning$;
     } else {
       this.showTrick$ = combineLatest(this.roundRunning$, this.player.playerState$.asObservable()).pipe(
