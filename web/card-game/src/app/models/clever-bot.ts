@@ -26,6 +26,7 @@ export class CleverBot implements DeclarationWhistPlayer {
     //track what other players have played
     // private otherPlayersPlayed: Map<DeclarationWhistPlayer, Card[]>;
     private allPlayers: PlayerInfo[];
+    private seenCards: Card[];
 
     // private tricks: 
 
@@ -42,6 +43,7 @@ export class CleverBot implements DeclarationWhistPlayer {
         // }
         this.allPlayers = [];
         this.tricksWon = 0;
+        this.seenCards = [];
         this.bid = 0;
         for (let player of allPlayers) {
             this.allPlayers.push(new PlayerInfo(player));
@@ -70,9 +72,23 @@ export class CleverBot implements DeclarationWhistPlayer {
          */
 
         let sorted: Map<Suit, Card[]> = Deck.getCardsInSuits(this.cards);
+        let topCards: Map<Suit, Card[]> = new Map<Suit, Card[]>();
+        let topCardCount = 0;
+        let topCardAverage = 0;
+        for (let suit of suitArray) {
+            topCards[suit] = [];
+            for (let card of sorted[suit]) {
+                let chance = this.chanceOfBeingHighestInSuit(card)
+                if (chance == 1) {
+                    topCardCount++;
+                    topCards[suit].push(card);
+                }
+                topCardAverage += chance;
+            }
+        }
 
-        //random guess!
-        return Math.round(Math.random() * 5);
+        //bit of fiddling, seems not unreasonable
+        return Math.round(topCardAverage / 1.5);
 
     }
 
@@ -154,9 +170,14 @@ export class CleverBot implements DeclarationWhistPlayer {
 
         return card.value + (card.suit == this.trumps.suit ? 13 : 0);
     }
-    private cardPlayedOrOurs(card: Card): boolean{
-        return false;
-    }   
+
+
+    /*
+    Is a card one of our starting cards, or one we've seen someone else play already this round?
+    */
+    private cardPlayedOrOurs(card: Card): boolean {
+        return this.startingCards.findIndex(testCard => testCard.equals(card)) >= 0 || this.seenCards.findIndex(testCard => testCard.equals(card)) >= 0;
+    }
 
     /**
      * 1 if the only higher cards are in our hand or have already been seen
@@ -164,27 +185,26 @@ export class CleverBot implements DeclarationWhistPlayer {
      * @param card 
      */
     private chanceOfBeingHighestInSuit(card: Card): number {
+        if (this.cardPlayedOrOurs(card)) {
+            if (card.value == 14) {
+                //if it's ours or known, then it's the highest... sort of
+                return 1;
+            }
 
-        if (card.value == 13) {
-            //this IS the highest card of its suit
-            return 1;
+            //check to see if the next highest card is the highest
+            if (this.chanceOfBeingHighestInSuit(new Card(card.suit, card.value + 1)) == 1) {
+                return 1;
+            }
         }
+        //TODO take into account card counting, who's run out of suits, who's trying to lose, etc
 
-        // let suitSorted = Deck.getCardsInSuits(this.cards);
+        //further from an ace, lower the chance
+        return 1 / (15 - card.value);
 
-        //check to see if the next highest card is the highest
-        // for (let value = card.value + 1; value < 13; value++) {
-        if (this.chanceOfBeingHighestInSuit(new Card(card.suit, card.value + 1)) == 1) {
-            return 1;
-        }
-        // }
-        // if ()
-
-        //TODO take into accoutn card counting
     }
 
     /**
-     * Simplistic test for possible to win the trick, if no-one else plays to beat us
+     * Is it /possible/ to win the trick based on what we've seen so far?
      * @param trick 
      */
     private possibleToWinTrick(trick: Card[], card: Card = null): boolean {
@@ -266,6 +286,7 @@ export class CleverBot implements DeclarationWhistPlayer {
             //update all our tracking of whatnot
             for (let card of previousTrick.cards) {
                 this.allPlayers[card.playerIndex].playedCards.push(card.card);
+                this.seenCards.push(card.card);
             }
             let winnerIndex = this.allPlayers.findIndex(player => player.player == previousTrick.winner);
             this.allPlayers[winnerIndex].tricksWon++;
