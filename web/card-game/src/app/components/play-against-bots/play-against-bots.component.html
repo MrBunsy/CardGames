@@ -1,17 +1,2 @@
-<card-table [players]="players" [humanPlayerIndex]="3" [openHand]="true"></card-table>
-
-<ng-container *ngIf="playerState$ | async as state">
-
-  <!-- State: {{state}} -->
-
-
-  <div>
-    <!-- <hand [cards]="playerCards$ | async"></hand> -->
-    
-  </div>
-
-  <!-- <bid *ngIf="state == 'ChoosingBid'" [validBids]="validBids$ | async"></bid>
-  <choose-trumps *ngIf="state == 'ChoosingTrumps'"></choose-trumps> -->
-
-
-</ng-container>
+<card-table [players]="players" [humanPlayerIndex]="3"></card-table>
+<!-- [openHand]="true" -->
