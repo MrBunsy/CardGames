@@ -13,6 +13,7 @@ import { map, tap } from 'rxjs/operators';
 export class TableComponent implements OnInit {
   @Input() players: DeclarationWhistPlayer[];
   @Input() humanPlayerIndex: number = -1;
+  @Input() openHand: boolean = false;
 
   public roundRunning$: Observable<boolean>;
 

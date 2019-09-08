@@ -3,7 +3,7 @@
     <trump-tracker></trump-tracker>
   </div>
   <div *ngFor="let i of [0,1,2,3]" class="{{playerPositions[i]}}Player">
-    <remote-player-hand *ngIf="humanPlayerIndex != i" [player]="players[i]" [vertical]="i%2==0"></remote-player-hand>
+    <remote-player-hand *ngIf="humanPlayerIndex != i" [player]="players[i]" [vertical]="i%2==0" [openHand]="openHand"></remote-player-hand>
     <local-player-hand *ngIf="humanPlayerIndex == i"></local-player-hand>
     <bid-tracker [player]="players[i]"></bid-tracker>
   </div>

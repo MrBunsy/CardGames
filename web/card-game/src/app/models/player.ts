@@ -37,6 +37,12 @@ export interface DeclarationWhistPlayer extends CardPlayer {
      * @param trick array of tupes of who (player index) played what
      */
     playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card>;
+
+
+    /**
+     * DEBUG ONLY
+     */
+    cards: Card[]
 }
 
 export class LocalHuman implements DeclarationWhistPlayer {
@@ -44,7 +50,8 @@ export class LocalHuman implements DeclarationWhistPlayer {
     //emitted when dealt a hand, and every time your hand changes
     public cards$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
 
-    private cards: Card[];
+    //public only for hacky debug
+    public cards: Card[];
 
     private bidOutput$: ReplaySubject<number> = new ReplaySubject<number>(1);
 
@@ -146,7 +153,8 @@ export class LocalHuman implements DeclarationWhistPlayer {
  */
 export class Moron implements DeclarationWhistPlayer {
 
-    private cards: Card[];
+    //public only for hacky debug
+    public cards: Card[];
     private cards$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
 
     constructor(public name: string) { }

@@ -10,16 +10,27 @@ class PlayerInfo {
     public bid: number;
     public choseTrumps: boolean;
     public tricksWon: number;
+    public suitsLeft: Suit[];
 
     constructor(public player: DeclarationWhistPlayer) {
         this.playedCards = [];
         this.tricksWon = 0;
+        this.suitsLeft = suitArray.slice();
+    }
+
+    public tryingToWin(): boolean {
+        return this.bid != this.tricksWon;
+    }
+
+    public stillHasSuit(suit: Suit) {
+        return this.suitsLeft.indexOf(suit) >= 0;
     }
 
 }
 
 export class CleverBot implements DeclarationWhistPlayer {
-    private cards: Card[];
+    //public only for debug
+    public cards: Card[];
     private startingCards: Card[];
     //what are trumps, and who chose them?
     private trumps: TrumpsEvent;
@@ -33,7 +44,12 @@ export class CleverBot implements DeclarationWhistPlayer {
     private tricksWon: number;
     private bid: number;
 
-    constructor(public name: string) { }
+    /**
+     * 
+     * @param name 
+     * @param winToValue ratio of probablity of win / probable value of card, which a card must exceed to be worth using to try to win a trick
+     */
+    constructor(public name: string, private winToValue: number = 0.8) { }
 
     public startRound(allPlayers: DeclarationWhistPlayer[]) {
         //reset everything we're tracking
@@ -147,6 +163,36 @@ export class CleverBot implements DeclarationWhistPlayer {
         //relying on our cards being sorted
         return ourTrumps[ourTrumps.length - 1];
     }
+    private getPlayerInfoFromPlayer(player: DeclarationWhistPlayer): PlayerInfo {
+        return this.allPlayers.find(test => test.player == player);
+    }
+
+    /**
+     * Get teh suit we should be following for a trick. Doesn't take into accoutn anyone trumping it
+     * @param trick 
+     */
+    private getLeadingSuitFromTrick(trick: CardInTrickEvent[]): Suit {
+        if (trick.length > 0) {
+            return trick[0].card.suit;
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns true if trick was lead in trumps, or has been trumped
+     * @param trick 
+     */
+    private hasTrickBeenTrumped(trick: CardInTrickEvent[]): boolean {
+
+        for (let cardInTrick of trick) {
+            if (cardInTrick.card.suit == this.trumps.suit) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Best guess at winning by playing a specific card
@@ -156,19 +202,75 @@ export class CleverBot implements DeclarationWhistPlayer {
         if (!this.possibleToWinTrick(trick.map(trick => trick.card), card)) {
             return 0;
         }
-        //TODO
-        return card.value;
+        let chanceOfHighest = this.chanceOfBeingHighestInSuit(card);
+
+        let cardsInTrick = trick.length;
+        let followingSuit = this.getLeadingSuitFromTrick(trick);
+        let trumped = this.hasTrickBeenTrumped(trick);
+
+        //increase chances based on how many other players have played so far
+        for (let i = 0; i < 4; i++) {
+            let increaseChanceBy = 0;
+            let thisPlayer: PlayerInfo;
+            if (trick.length > 0) {
+                thisPlayer = this.allPlayers[(trick[0].playerIndex + i) % this.allPlayers.length];
+            } else {
+                //we are the first player
+                thisPlayer = this.allPlayers[(this.allPlayers.findIndex(test => test.player == this) + i) % this.allPlayers.length];
+            }
+            if (thisPlayer.player == this) {
+                continue;
+            }
+
+            if (i < cardsInTrick) {
+                //this is a card already played, given that it's possible to win the trick, increase the chances because we don't
+                //know where the cards that can beat it are
+
+                if (thisPlayer.stillHasSuit(followingSuit) || thisPlayer.stillHasSuit(this.trumps.suit)) {
+                    //a preceeding player hasn't run out of a suit yet, maybe, so count them as having had a small chance of holding the card whcih could beat this one
+
+
+                    if (thisPlayer.tryingToWin()) {
+                        //if they want to win, likely to be hoarding good cards
+                        increaseChanceBy = 0.5;
+                    } else {
+                        //anyone who can't play a card now is still helpful to us
+                        increaseChanceBy = 0.25
+                    }
+
+
+                }
+            } else {
+                //the players yet to play
+                if (thisPlayer.tryingToWin()) {
+                    //if they want to win, likely to be trying to beat us
+                    increaseChanceBy = -0.1;
+                } else {
+                    //likely not trying to beat us
+                    increaseChanceBy = 0.5
+                }
+            }
+
+            chanceOfHighest += (1 - chanceOfHighest) * increaseChanceBy;
+        }
+
+        //TODO take into account other players current win/bid - if they're yet to play and are tryin
+        return chanceOfHighest;
     }
 
     /**
      * How much is this card worth, taking into account what we know of the game?
      * Intended to work out which card to get rid of when we can't or don't want to win
      * @param card 
+     * 
+     * scaled from 0-1
      */
     private probableValueOfCard(card: Card): number {
         //TODO take into account who's run out of a suit and trumps and card distribution
+        //this only takes into account if it's the highest known of its suit
+        return this.chanceOfBeingHighestInSuit(card);
 
-        return card.value + (card.suit == this.trumps.suit ? 13 : 0);
+        // return card.value + (card.suit == this.trumps.suit ? 13 : 0);
     }
 
 
@@ -199,7 +301,7 @@ export class CleverBot implements DeclarationWhistPlayer {
         //TODO take into account card counting, who's run out of suits, who's trying to lose, etc
 
         //further from an ace, lower the chance
-        return 1 / (15 - card.value);
+        return 1 / (15.5 - card.value);
 
     }
 
@@ -306,7 +408,7 @@ export class CleverBot implements DeclarationWhistPlayer {
             }
         }
 
-        let wantToWin = this.tricksWon < this.bid;
+        let wantToWin = this.tricksWon != this.bid;
         let followingSuit = true;
         let playingFirst = false;
 
@@ -337,30 +439,40 @@ export class CleverBot implements DeclarationWhistPlayer {
 
 
         // } else 
-        if (this.possibleToWinTrick(trick.map(trick => trick.card))) {
-            //we have a chance to win this trick
+        // if (this.possibleToWinTrick(trick.map(trick => trick.card))) {
+        //we have a chance to win this trick
 
-            //sort cards in order of probability of winning
-            let bestCards = validCards.sort((a, b) => this.probablityToWinTrick(trick, a) - this.probablityToWinTrick(trick, b));
-            let mostLikelyToWin = bestCards[bestCards.length - 1];
-            let leastLikelyToWin = bestCards[0];
+        //sort cards in order of probability of winning
+        let bestCards = validCards.sort((a, b) => this.probablityToWinTrick(trick, a) - this.probablityToWinTrick(trick, b));
+        let mostLikelyToWin = bestCards[bestCards.length - 1];
+        let leastLikelyToWin = bestCards[0];
 
-            //duplication of logic here, TODO refactor
-            //try to win or try to lose based on how many tricks we've won
-            if (this.tricksWon != this.bid) {
-                //either we're below the bid and trying to reach it, or we've overshot and might as well get the points
-                playCard = mostLikelyToWin;
-            } else {
-                //TODO improve, actually want to play the highest VALUE card which won't win us hte trick
-                playCard = leastLikelyToWin;
-            }
+        // //duplication of logic here, TODO refactor
+        // //try to win or try to lose based on how many tricks we've won
+        // if (this.tricksWon != this.bid) {
+        //     //either we're below the bid and trying to reach it, or we've overshot and might as well get the points
+        //     playCard = mostLikelyToWin;
+        // } else {
+        //     //TODO improve, actually want to play the highest VALUE card which won't win us hte trick
+        //     playCard = leastLikelyToWin;
+        // }
 
+        //note - currently probability to win and value are the same, since they don't take into acoutn all information available.
+        let winChance = this.probablityToWinTrick(trick, mostLikelyToWin)
+        // let wintoValueRatio = winChance / this.probableValueOfCard(mostLikelyToWin);
+        // console.log("Player "+this.name+" win to value ratio of " + mostLikelyToWin.toString() + ":" + wintoValueRatio);
+        // if (wintoValueRatio > this.winToValue) {
+        //     //the chance of this card winning is high enough to be worth using it
+        //     playCard = mostLikelyToWin;
+        console.log("Player " + this.name + " win chance of " + mostLikelyToWin.toString() + ":" + winChance);
+        if (winChance > this.winToValue) {
 
+            playCard = mostLikelyToWin;
         } else {
-            //we can't win even if we wanted to, throw something away
+            //we don't want to waste our best card trying to win, because it's too low chance
 
             //TODO take into account cards worth protecting, and throw away anything that's not protecting anythign else first
-            if (this.tricksWon != this.bid) {
+            if (wantToWin) {
                 //want to win overall, so lose our worst card
                 playCard = valuedCards[0];
 

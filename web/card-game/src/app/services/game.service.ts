@@ -4,6 +4,7 @@ import { DeclarationWhistPlayer } from '../models/player';
 import { LocalDeclarationWhist, DeclarationWhistGameEvents, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
 import { Observable, Subscription, ReplaySubject, of, BehaviorSubject, merge } from 'rxjs';
 import { map, filter, delay, concatMap, combineLatest } from 'rxjs/operators';
+import { Card } from '../models/card';
 
 class PlayerWithInfo {
   constructor(public player: DeclarationWhistPlayer) { }
@@ -210,11 +211,24 @@ export class GameService implements OnDestroy {
     return merge(trumps, start);
   }
 
-  public getCardCountFor(player: DeclarationWhistPlayer) {
+  public getCardCountFor(player: DeclarationWhistPlayer): Observable<number> {
     return this.getPlayerCardCounts().pipe(
       map(allCounts => {
         let index = this.players.findIndex(test => test.player == player);
         return allCounts[index];
+      })
+    )
+  }
+
+  /**
+   * Will only work for a local player in debug
+   * @param player 
+   */
+  public getCardsFor(player: DeclarationWhistPlayer): Observable<Card[]>{
+    return this.getPlayerCardCounts().pipe(
+      map(() => {
+        let index = this.players.findIndex(test => test.player == player)
+        return this.players[index].player.cards.slice();
       })
     )
   }

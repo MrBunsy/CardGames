@@ -14,23 +14,27 @@ export class RemotePlayerHandComponent implements OnInit {
 
   @Input() player: DeclarationWhistPlayer;
   @Input() vertical: boolean = false;
+  @Input() openHand: boolean = false;
 
   public cards$: Observable<Card[]>;
 
   constructor(private game: GameService) { }
 
   ngOnInit() {
-    this.cards$ = this.game.getCardCountFor(this.player).pipe(
-      //replace with face-down cards
-      map(count => {
-        let cards = [];
-        for (let i = 0; i < count; i++) {
-          cards.push(new Card(null, null, false));
-        }
-        return cards;
-      })
-    );
-
+    if (this.openHand) {
+      this.cards$ = this.game.getCardsFor(this.player);
+    } else {
+      this.cards$ = this.game.getCardCountFor(this.player).pipe(
+        //replace with face-down cards
+        map(count => {
+          let cards = [];
+          for (let i = 0; i < count; i++) {
+            cards.push(new Card(null, null, false));
+          }
+          return cards;
+        })
+      );
+    }
   }
 
 }
