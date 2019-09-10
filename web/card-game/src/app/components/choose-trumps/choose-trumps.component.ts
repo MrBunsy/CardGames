@@ -16,6 +16,8 @@ export class ChooseTrumpsComponent implements OnInit {
     for (let suit of suitArray) {
       this.cards.push(new Card(suit, 0, true));
     }
+    //no trumps option
+    this.cards.push(new Card(null, 0, true))
   }
 
   public suitChosen(card: Card) {

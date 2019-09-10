@@ -35,7 +35,8 @@ export class Card {
     }
 
     public toString(): string {
-        if (!this.faceUp) {
+        //face down, or being used to represent "no trumps chosen"
+        if (!this.faceUp || this.suit == null) {
             return "back";
         }
         return this.valueLookup[this.value] + this.suit.substring(0, 1);
