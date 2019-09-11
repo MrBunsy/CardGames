@@ -1,0 +1,4 @@
+/server/dist
+/server/node_modules
+/web/card-game/dist
+/web/card-game/node_modules
