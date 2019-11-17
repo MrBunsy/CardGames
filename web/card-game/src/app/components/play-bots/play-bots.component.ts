@@ -23,7 +23,7 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private subscriptions: Subscription[] = [];
 
-  @ViewChild("logDiv") logDiv: ElementRef;
+  @ViewChild("logDiv", { static: true }) logDiv: ElementRef;
 
   constructor(private game: GameService) {
 
