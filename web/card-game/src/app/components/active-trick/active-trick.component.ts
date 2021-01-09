@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, OnDestroy } from '@angular/core';
-import { DeclarationWhistPlayer } from 'src/app/models/player';
+import { DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
 import { GameService } from 'src/app/services/game.service';
 import { Observable, Subscription } from 'rxjs';
 import { Card } from 'src/app/models/card';

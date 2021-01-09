@@ -1,4 +1,4 @@
-import { DeclarationWhistPlayer } from './player';
+import { DeclarationWhistPlayer } from './declaration-whist-player';
 import { Card, Suit, suitArray } from './card';
 import { ReplaySubject, Observable, of } from 'rxjs';
 import { TrumpsEvent, BidEvent, CardInTrickEvent, Trick } from './declaration-whist';
@@ -34,7 +34,7 @@ class PlayerInfo {
 
 }
 
-export class CleverBot implements DeclarationWhistPlayer {
+export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
     //public only for debug
     public cards: Card[];
     private startingCards: Card[];

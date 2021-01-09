@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { DeckService } from 'src/app/services/deck.service';
 import { Subscription, Subject, Observable } from 'rxjs';
-import { DeclarationWhistGameEvents, LocalDeclarationWhist } from 'src/app/models/declaration-whist';
-import { DeclarationWhistPlayer, LocalHuman, Moron } from 'src/app/models/player';
+import { DeclarationWhistEvent, LocalDeclarationWhist } from 'src/app/models/declaration-whist';
+import { DeclarationWhistPlayer, LocalHumanDeclarationWhist, MoronDeclarationWhist } from 'src/app/models/declaration-whist-player';
 import { Suit, Card } from 'src/app/models/card';
 import { HumanPlayerService, PlayerState } from 'src/app/services/human-player.service';
 import { tap } from 'rxjs/operators';
 import { GameService } from 'src/app/services/game.service';
-import { CleverBot } from 'src/app/models/clever-bot';
+import { CleverBotDeclarationWhist } from 'src/app/models/clever-bot';
 
 @Component({
   selector: 'app-play-against-bots',
@@ -20,7 +20,7 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
   // public player: LocalHuman;
   // public game: LocalDeclarationWhist;
 
-  public log: DeclarationWhistGameEvents[] = [];
+  public log: DeclarationWhistEvent[] = [];
 
   private subscriptions: Subscription[] = [];
 
@@ -42,9 +42,9 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
       // new Moron("Ted"),
       // new Moron("Bill"),
       // new Moron("Steve"),
-      new CleverBot("Clever Ted"),
-      new CleverBot("Clever Bill"),
-      new CleverBot("Clever Steve"),
+      new CleverBotDeclarationWhist("Clever Ted"),
+      new CleverBotDeclarationWhist("Clever Bill"),
+      new CleverBotDeclarationWhist("Clever Steve"),
       this.player.createPlayer()
     ];
 
@@ -56,7 +56,7 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
     //or ensure that creating a new game always ends an existing game
     this.game.createDeclarationWhist(this.players, 1000, 3);
 
-    this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event)));
+    this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event as DeclarationWhistEvent)));
 
     this.roundRunning$ = this.game.getRoundInProgress();
     

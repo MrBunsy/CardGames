@@ -20,7 +20,10 @@ import { ActiveTrickComponent } from './components/active-trick/active-trick.com
 import { BidTrackerComponent } from './components/bid-tracker/bid-tracker.component';
 import { TrickComponent } from './components/trick/trick.component';
 import { TotalScoresComponent } from './components/total-scores/total-scores.component';
-import { TableComponent } from './components/table/table.component';
+import { TableComponent } from './components/whist-table/whist-table.component';
+import { PresidentTableComponent } from './components/president-table/president-table.component';
+import { RemotePlayerHandPresidentComponent } from './components/remote-player-hand-president/remote-player-hand-president.component';
+import { PlayPresidentAgainstBotsComponent } from './components/play-president-against-bots/play-president-against-bots.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +44,10 @@ import { TableComponent } from './components/table/table.component';
     BidTrackerComponent,
     TrickComponent,
     TotalScoresComponent,
-    TableComponent
+    TableComponent,
+    PresidentTableComponent,
+    RemotePlayerHandPresidentComponent,
+    PlayPresidentAgainstBotsComponent
   ],
   imports: [
     BrowserModule,

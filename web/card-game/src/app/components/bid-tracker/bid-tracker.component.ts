@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { GameService } from 'src/app/services/game.service';
-import { DeclarationWhistPlayer } from 'src/app/models/player';
+import { DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 

@@ -7,7 +7,7 @@ import { PlayAgainstBotsComponent } from './components/play-against-bots/play-ag
 
 const routes: Routes = [
   { path: 'home', component: HomeComponent },
-  { path: '', component: HomeComponent },
+  { path: '', component: PlayAgainstBotsComponent },
   { path: 'play-bots', component: PlayBotsComponent },
   { path: 'play-vs-bots', component: PlayAgainstBotsComponent },
   { path: 'about', component: AboutComponent }

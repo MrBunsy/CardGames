@@ -1,18 +1,32 @@
 import { Card, suitArray, Suit } from './card';
 import shuffle from '../misc';
-import { CardPlayer } from './player';
+import { CardPlayer } from './declaration-whist-player';
 export class Deck {
 
     public cards: Card[];
-
-    constructor(shuffled = true, jokers = false) {
+    /**
+     * 
+     * @param shuffled 
+     * @param jokers 
+     * @param equalForPlayers if provided, number of players to give equal hands (remove smallest cards first)
+     */
+    constructor(shuffled = true, jokers = false, equalForPlayers = -1) {
         let deck: Card[] = [];
 
+        let removeCards = 0;
+        if (equalForPlayers > 0) {
+            removeCards = (52 + (jokers ? 2 : 0)) % equalForPlayers;
+        }
 
-        for (let suit = 0; suit < 4; suit++) {//[Suit.Club, Suit.Diamond, Suit.Heart, Suit.Spade]
-            for (let value = 2; value <= 14; value++) {
+        for (let value = 2; value <= 14; value++) {
+            for (let suit = 0; suit < 4; suit++) {//[Suit.Club, Suit.Diamond, Suit.Heart, Suit.Spade]
                 //magic https://stackoverflow.com/questions/17380845/how-do-i-convert-a-string-to-enum-in-typescript
-                deck.push(new Card(suitArray[suit], value))
+                if(removeCards == 0){
+                    deck.push(new Card(suitArray[suit], value));
+                }else{
+                    //skip the first few
+                    removeCards--;
+                }
             }
         }
 
@@ -74,7 +88,7 @@ export class Deck {
     public static sort(cards: Card[], groupSuits: boolean = true): Card[] {
         return cards.sort((cardA, cardB) => Deck.cardValue(cardA, groupSuits) - Deck.cardValue(cardB, groupSuits))
     }
-    
+
     public static getSuitCount(cards: Card[]): Map<Suit, number> {
         let count = new Map<Suit, number>();
         for (let suit of suitArray) {

@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Subject, ReplaySubject, Observable, Subscription, BehaviorSubject } from 'rxjs';
 import { Suit, Card } from '../models/card';
-import { LocalHuman, DeclarationWhistPlayer } from '../models/player';
+import { LocalHumanDeclarationWhist, DeclarationWhistPlayer } from '../models/declaration-whist-player';
 import { first } from 'rxjs/operators';
 import { GameService } from './game.service';
 
@@ -33,23 +33,23 @@ export class HumanPlayerService implements OnDestroy {
   //duplicating here rather than just passing on the players, so we can cache output if it was missed by any single component
   //cards dealt
   public cards$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
-  //emitted when we need to bid
+  //emitted when we need to bid (declaration whist)
   public validBids$: ReplaySubject<number[]> = new ReplaySubject<number[]>(1);
-  //emitted if we need to choose trumps (true for we need to choose, false for we've already chosen)
+  //emitted if we need to choose trumps (true for we need to choose, false for we've already chosen) (declaration whist)
   public chooseTrumps$: ReplaySubject<boolean> = new ReplaySubject<boolean>(1);
-  //emitted when we need to play a card
+  //emitted when we need to play a card (declaration whist)
   public validCardsToPlay$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
 
   public playerState$: BehaviorSubject<PlayerState> = new BehaviorSubject<PlayerState>("Waiting");
 
 
-  private player: LocalHuman;
+  private player: LocalHumanDeclarationWhist;
 
 
   constructor(private gameService: GameService) { }
 
-  public createPlayer(name: string = "You"): LocalHuman {
-    this.player = new LocalHuman(name, this.bid$, this.trumps$, this.playCard$);
+  public createPlayer(name: string = "You"): LocalHumanDeclarationWhist {
+    this.player = new LocalHumanDeclarationWhist(name, this.bid$, this.trumps$, this.playCard$);
 
     //TODO clear subs at end of a match?
 

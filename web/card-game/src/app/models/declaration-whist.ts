@@ -1,8 +1,9 @@
-import { DeclarationWhistPlayer } from './player';
+import { DeclarationWhistPlayer } from './declaration-whist-player';
 import { Deck } from './deck';
 import { first } from 'rxjs/operators';
 import { ReplaySubject, Observable } from 'rxjs';
 import { Suit, Card } from './card';
+import { Game, GameEvent, IGame } from './game';
 
 //long term plan to make this suitable for multiple games. for now, just write for declaration whist and tease apart later
 //this is a stand in for the remote server
@@ -35,7 +36,7 @@ export class TrumpsEvent extends EventInfo {
     public suit: Suit;
 }
 
-export class TrickWonEvent extends EventInfo{
+export class TrickWonEvent extends EventInfo {
     //player in event info was the winner
 }
 
@@ -79,13 +80,18 @@ export enum DeclarationWhistGameEventsType {
 
 }
 
-export class DeclarationWhistGameEvents {
+export class DeclarationWhistEvent extends GameEvent {
     //turns out enums are a PITA in TS/angular
-    public type: "MatchStart" | "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished";
-    public event: BidEvent | TrumpsEvent | CardInTrickEvent | EventInfo | ResultsEvent;
+    constructor(public type: "MatchStart" | "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished",
+        public event: BidEvent | TrumpsEvent | CardInTrickEvent | EventInfo | ResultsEvent = null,
+    ) {
+        super(type, event, Game.DeclarationWhist);
+    }
 }
 
-export class LocalDeclarationWhist { //implements IGame
+export class LocalDeclarationWhist implements IGame {
+
+    public type = Game.DeclarationWhist;
 
     private playerInfos: PlayerInfo[] = [];
     private bids: BidEvent[] = [];
@@ -93,7 +99,11 @@ export class LocalDeclarationWhist { //implements IGame
     private trumps: Suit;
 
     //main interface for the world to watch the game
-    public gameEvents: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
+    public gameEvents: ReplaySubject<DeclarationWhistEvent> = new ReplaySubject<DeclarationWhistEvent>(10);
+
+    public getGameEvents(): Observable<DeclarationWhistEvent> {
+        return this.gameEvents.asObservable();
+    }
 
     constructor(public players: DeclarationWhistPlayer[], private bidFirst: number, private verbose: boolean = false) {
         let i = 0;
@@ -108,7 +118,7 @@ export class LocalDeclarationWhist { //implements IGame
     /**
      * Start a match. works for first match or next match
      */
-    public start(deck: Deck) {
+    public start() {
         //reset various counters
         for (let player of this.playerInfos) {
             player.nextRound();
@@ -118,9 +128,9 @@ export class LocalDeclarationWhist { //implements IGame
         this.bids = [];
         this.tricks = [];
         this.trumps = null;
-
+        let deck = new Deck();
         deck.deal(this.players);
-        this.gameEvents.next({ type: "MatchStart", event: null });
+        this.gameEvents.next(new DeclarationWhistEvent("MatchStart"));
         this.players[this.bidFirst].declareBid([]).pipe(first()).subscribe(
             bid => this.playerBid({ playerIndex: this.bidFirst, bid: bid, player: this.players[this.bidFirst] })
         )
@@ -132,7 +142,7 @@ export class LocalDeclarationWhist { //implements IGame
             console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid.bid);
         }
         this.playerInfos[bid.playerIndex].bid = bid.bid;
-        this.gameEvents.next({ type: "Bid", event: bid });
+        this.gameEvents.next(new DeclarationWhistEvent("Bid", bid));
         this.bids.push(bid);
 
         if (this.bids.length != this.players.length) {
@@ -173,7 +183,7 @@ export class LocalDeclarationWhist { //implements IGame
         for (let player of this.players) {
             player.trumpsChosen(trumpsEvent);
         }
-        this.gameEvents.next({ type: "Trumps", event: trumpsEvent });
+        this.gameEvents.next(new DeclarationWhistEvent("Trumps", trumpsEvent));
         this.startTrick(player);
     }
 
@@ -209,7 +219,7 @@ export class LocalDeclarationWhist { //implements IGame
 
         // this.emitTrick();
 
-        this.gameEvents.next({ type: "CardPlayed", event: card })
+        this.gameEvents.next(new DeclarationWhistEvent("CardPlayed", card))
 
         if (currentTrick.cards.length < 4) {
             //more cards to play
@@ -275,7 +285,7 @@ export class LocalDeclarationWhist { //implements IGame
         if (this.verbose) {
             console.log(winner.name + " won the trick")
         }
-        this.gameEvents.next({ type: "TrickWon", event: { player: winner, playerIndex: this.players.indexOf(winner) } });
+        this.gameEvents.next(new DeclarationWhistEvent("TrickWon", { player: winner, playerIndex: this.players.indexOf(winner) }));
 
         if (this.tricks.length < 13) {
             this.startTrick(winner);
@@ -312,7 +322,7 @@ export class LocalDeclarationWhist { //implements IGame
             console.log("Player " + winnerIndex + ": " + winner.player.name + " won the round");
         }
 
-        this.gameEvents.next({ type: "MatchFinished", event: { players: this.playerInfos } })
+        this.gameEvents.next(new DeclarationWhistEvent("MatchFinished", { players: this.playerInfos }))
     }
 
     /**

@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { DeclarationWhistPlayer } from 'src/app/models/player';
+import { DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
 import { Observable } from 'rxjs';
 import { Card } from 'src/app/models/card';
 import { map } from 'rxjs/operators';

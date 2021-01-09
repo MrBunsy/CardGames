@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { Moron, LocalHuman, DeclarationWhistPlayer } from 'src/app/models/player';
-import { LocalDeclarationWhist, DeclarationWhistGameEvents } from 'src/app/models/declaration-whist';
+import { MoronDeclarationWhist, LocalHumanDeclarationWhist, DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
+import { LocalDeclarationWhist, DeclarationWhistEvent } from 'src/app/models/declaration-whist';
 import { DeckService } from 'src/app/services/deck.service';
 import { Subscription, Observable } from 'rxjs';
 import { GameService } from 'src/app/services/game.service';
-import { CleverBot } from 'src/app/models/clever-bot';
+import { CleverBotDeclarationWhist } from 'src/app/models/clever-bot';
 
 @Component({
   selector: 'app-play-bots',
@@ -16,10 +16,10 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   public players: DeclarationWhistPlayer[];
-  public player: LocalHuman;
+  public player: LocalHumanDeclarationWhist;
   public roundRunning$: Observable<boolean>;
 
-  public log: DeclarationWhistGameEvents[] = [];
+  public log: DeclarationWhistEvent[] = [];
 
   private subscriptions: Subscription[] = [];
 
@@ -28,16 +28,16 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(private game: GameService) {
 
     this.players = [
-      new Moron("Ted"),
-      new Moron("Bill"),
-      new Moron("Steve"),
-      new CleverBot("Clever Bob")
+      new MoronDeclarationWhist("Ted"),
+      new MoronDeclarationWhist("Bill"),
+      new MoronDeclarationWhist("Steve"),
+      new CleverBotDeclarationWhist("Clever Bob")
     ];
 
     this.game.createDeclarationWhist(this.players, 200, -1, true);
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => {
-      this.log.push(event);
+      this.log.push(event as DeclarationWhistEvent);
       this.scrollLog();
     }));
 

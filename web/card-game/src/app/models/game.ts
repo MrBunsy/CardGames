@@ -1,14 +1,21 @@
-import { Card } from './card';
-import { DeclarationWhistPlayer } from './player';
+import { Observable } from 'rxjs';
 
 export enum Game {
-    DeclarationWhist
+    DeclarationWhist,
+    President
+}
+
+export class GameEvent{
+    constructor(public type: string,
+    public event: any,
+    public game: Game){}
+
 }
 
 export interface IGame {
-
-    // useDeck: (desk: Card[]) => void;
-    usePlayers: (players: DeclarationWhistPlayer[]) => void;
+    getGameEvents(): Observable<GameEvent>;
+    start();
+    type: Game;
 }
 
 

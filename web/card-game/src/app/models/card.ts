@@ -28,7 +28,8 @@ export class Card {
         "J",
         "Q",
         "K",
-        "A"]
+        "A",
+        "0"]//joker
 
     constructor(public suit: Suit, public value: number, public faceUp: boolean = true) {
 

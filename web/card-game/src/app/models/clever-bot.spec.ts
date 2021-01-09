@@ -1,7 +1,7 @@
-import { CleverBot } from './clever-bot';
+import { CleverBotDeclarationWhist } from './clever-bot';
 
 describe('CleverBot', () => {
   it('should create an instance', () => {
-    expect(new CleverBot()).toBeTruthy();
+    expect(new CleverBotDeclarationWhist()).toBeTruthy();
   });
 });

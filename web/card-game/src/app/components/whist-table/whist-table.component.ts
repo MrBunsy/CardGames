@@ -1,12 +1,12 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { DeclarationWhistPlayer } from 'src/app/models/player';
+import { DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
 import { Observable, merge, combineLatest, of } from 'rxjs';
 import { GameService } from 'src/app/services/game.service';
 import { PlayerState, HumanPlayerService } from 'src/app/services/human-player.service';
 import { map, tap } from 'rxjs/operators';
 
 @Component({
-  selector: 'card-table',
+  selector: 'whist-table',
   templateUrl: './table.component.html',
   styleUrls: ['./table.component.css']
 })

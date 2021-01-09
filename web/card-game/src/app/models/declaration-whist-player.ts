@@ -45,7 +45,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
     cards: Card[]
 }
 
-export class LocalHuman implements DeclarationWhistPlayer {
+export class LocalHumanDeclarationWhist implements DeclarationWhistPlayer {
 
     //emitted when dealt a hand, and every time your hand changes
     public cards$: ReplaySubject<Card[]> = new ReplaySubject<Card[]>(1);
@@ -151,7 +151,7 @@ export class LocalHuman implements DeclarationWhistPlayer {
 /**
  * The Moron will play valid, but random, cards and choices
  */
-export class Moron implements DeclarationWhistPlayer {
+export class MoronDeclarationWhist implements DeclarationWhistPlayer {
 
     //public only for hacky debug
     public cards: Card[];

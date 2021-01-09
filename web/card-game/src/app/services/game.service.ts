@@ -1,10 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
-import { DeclarationWhistPlayer } from '../models/player';
-import { LocalDeclarationWhist, DeclarationWhistGameEvents, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
+import { DeclarationWhistPlayer } from '../models/declaration-whist-player';
+import { LocalDeclarationWhist, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
 import { Observable, Subscription, ReplaySubject, of, BehaviorSubject, merge } from 'rxjs';
 import { map, filter, delay, concatMap, combineLatest } from 'rxjs/operators';
 import { Card } from '../models/card';
+import { PresidentPlayer } from '../models/PresidentPlayer';
+import { GameEvent, IGame } from '../models/game';
 
 class PlayerWithInfo {
   constructor(public player: DeclarationWhistPlayer) { }
@@ -29,11 +31,11 @@ class PlayerWithInfo {
 })
 export class GameService implements OnDestroy {
 
-  private game: LocalDeclarationWhist;
+  private game: IGame;
   private players: PlayerWithInfo[];
   private subscriptions: Subscription[] = [];
 
-  private gameEventsOut$: ReplaySubject<DeclarationWhistGameEvents> = new ReplaySubject<DeclarationWhistGameEvents>(10);
+  private gameEventsOut$: ReplaySubject<GameEvent> = new ReplaySubject<GameEvent>(10);
   private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
   private tricks: number = 0;
   private currentTurnEmitter: ReplaySubject<DeclarationWhistPlayer> = new ReplaySubject<DeclarationWhistPlayer>(1);
@@ -61,7 +63,7 @@ export class GameService implements OnDestroy {
 
   }
 
-  private processGameEvent(event: DeclarationWhistGameEvents) {
+  private processGameEvent(event: GameEvent) {
 
     switch (event.type) {
       case "CardPlayed":
@@ -115,13 +117,17 @@ export class GameService implements OnDestroy {
     this.gameEventsOut$.next(event)
   }
 
-  private isEventFromLocalPlayer(event: DeclarationWhistGameEvents): boolean {
+  private isEventFromLocalPlayer(event: GameEvent): boolean {
 
     if (event.type == "Bid" || event.type == "CardPlayed" || event.type == "Trumps") {//deliberately exclude TrickWon, since this didn't directly originate from player action
       return (<EventInfo>event.event).playerIndex == this.localPlayerIndex;
     }
 
     return false;
+  }
+
+  public createPresident(players: PresidentPlayer[]){
+
   }
 
   /**
@@ -141,25 +147,29 @@ export class GameService implements OnDestroy {
 
     this.game = new LocalDeclarationWhist(players, Math.floor(Math.random() * this.players.length), verbose);
 
-    //isn't there a thing to make an observable hot? shouldn't we use that?
-    this.subscriptions.push(this.game.gameEvents.asObservable().pipe(
-      //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
-      //extra funky logic to not delay player's events
-      concatMap(event => {
-        if (this.isEventFromLocalPlayer(event)) {
-          return of(event)
-        } else {
-          return of(event).pipe(delay(this.eventInterval))
-        }
-      }
-      )
-    ).subscribe(
-      event => this.processGameEvent(event)
-    ));
+    this.subscribetoGame();
 
   }
 
-  public getGameEvents(): Observable<DeclarationWhistGameEvents> {
+  private subscribetoGame(){
+  //isn't there a thing to make an observable hot? shouldn't we use that?
+  this.subscriptions.push(this.game.getGameEvents().pipe(
+    //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
+    //extra funky logic to not delay player's events
+    concatMap(event => {
+      if (this.isEventFromLocalPlayer(event)) {
+        return of(event)
+      } else {
+        return of(event).pipe(delay(this.eventInterval))
+      }
+    }
+    )
+  ).subscribe(
+    event => this.processGameEvent(event)
+  ));
+  }
+
+  public getGameEvents(): Observable<GameEvent> {
     return this.gameEventsOut$.asObservable().pipe(
 
     )
@@ -175,7 +185,8 @@ export class GameService implements OnDestroy {
       player.nextRound();
     }
     this.tricks = 0;
-    this.game.start(this.deckService.getDeck());
+    
+    this.game.start();
   }
 
   private _getPlayerCardCounts(): number[] {
@@ -326,7 +337,7 @@ export class GameService implements OnDestroy {
     this.game = null;
     this.players = [];
 
-    this.gameEventsOut$ = new ReplaySubject<DeclarationWhistGameEvents>(10);
+    this.gameEventsOut$ = new ReplaySubject<GameEvent>(10);
     this.trickEmitter = new ReplaySubject<Trick>(1);
     this.tricks = 0;
     this.currentTurnEmitter = new ReplaySubject<DeclarationWhistPlayer>(1);
