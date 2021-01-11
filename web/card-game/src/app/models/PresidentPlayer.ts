@@ -21,9 +21,9 @@ export class PresidentPlayer implements CardPlayer {
     //     }
     // }
 
-    static getTypeOfPokerHand(cards: Card[]): "Straight" | "Flush" | "FullHouse" | "StraightFlush" {
+    // static getTypeOfPokerHand(cards: Card[]): "Straight" | "Flush" | "FullHouse" | "StraightFlush" {
 
-    }
+    // }
 
     public cards: Card[];
 
@@ -86,18 +86,44 @@ export class PresidentPlayer implements CardPlayer {
  * Plays valid cards but with simplistic strategy
  */
 export class MoronPresidentPlayer extends PresidentPlayer {
-    playOrPass(trickSoFar: PresidentTrick): Observable<Card[]> {
-        switch (trickSoFar.cards.length) {
+    public playOrPass(trickSoFar: PresidentTrick): Observable<Card[]> {
+        let topCards = trickSoFar.cards[trickSoFar.cards.length].cards;
+        switch (topCards.length) {
             case 1:
-
+                for (let card of this.cards) {
+                    //play lowest card that's valid
+                    if (card.cardValue() > topCards[0].cardValue()) {
+                        this.cards = this.cards.splice(this.cards.indexOf(card), 1);
+                        return of([card]);
+                    }
+                }
+                break;
+            case 2:
+            case 3:
+            case 4:
+                //play lowest pair/triple/quad that's valid
+                let sets: Card[][] = Deck.getDuplicates(this.cards, topCards.length);
+                for (let set of sets) {
+                    //play if highest in our set is higher than highest in their set
+                    if (set[topCards.length - 1].cardValue() > Deck.sort(topCards)[topCards.length - 1].cardValue()) {
+                        this.cards = this.cards.splice(this.cards.indexOf(set[0], set.length));
+                        return of(set);
+                    }
+                }
+                break;
+            case 5:
+                //TODO find poker hands
                 break;
         }
+        //have to pass
+        return of([]);
     }
     startRound(allPlayers: PresidentPlayer[]) {
         super.startRound(allPlayers);
     }
     dealHand(cards: Card[]) {
         super.dealHand(cards);
+        this.cards = Deck.sort(this.cards);
     }
 
 }

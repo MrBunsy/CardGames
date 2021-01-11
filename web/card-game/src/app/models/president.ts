@@ -53,30 +53,31 @@ export class LocalPresidentGame implements IGame {
 
     constructor(public players: PresidentPlayer[], private verbose = true) {
 
-        let straight = [new Card("Clubs", 2),
-        new Card("Clubs", 3),
-        new Card("Clubs", 4),
-        new Card("Clubs", 5),
-        new Card("Spades", 6)
-        ];
-        let flush = [new Card("Clubs", 7),
-        new Card("Clubs", 8),
-        new Card("Clubs", 9),
-        new Card("Clubs", 10),
-        new Card("Clubs", 12)
-        ];
-        let fullHouse = [
-            new Card("Diamonds", 14),
-            new Card("Hearts", 14),
-            new Card("Spades", 14),
-            new Card("Spades", 2),
-            new Card("Clubs", 2),
-        ]
+        //*cough* unit testing *cough*
+        // let straight = [new Card("Clubs", 2),
+        // new Card("Clubs", 3),
+        // new Card("Clubs", 4),
+        // new Card("Clubs", 5),
+        // new Card("Spades", 6)
+        // ];
+        // let flush = [new Card("Clubs", 7),
+        // new Card("Clubs", 8),
+        // new Card("Clubs", 9),
+        // new Card("Clubs", 10),
+        // new Card("Clubs", 12)
+        // ];
+        // let fullHouse = [
+        //     new Card("Diamonds", 14),
+        //     new Card("Hearts", 14),
+        //     new Card("Spades", 14),
+        //     new Card("Spades", 2),
+        //     new Card("Clubs", 2),
+        // ]
 
-        console.log(Deck.getPokerHandValue(fullHouse));
+        // console.log(Deck.getPokerHandValue(fullHouse));
 
-        console.log(PresidentPlayer.isMyHandBetter(fullHouse, flush));
-        console.log(PresidentPlayer.isMyHandBetter(straight, flush));
+        // console.log(PresidentPlayer.isMyHandBetter(fullHouse, flush));
+        // console.log(PresidentPlayer.isMyHandBetter(straight, flush));
     }
 
     getGameEvents(): Observable<GameEvent> {

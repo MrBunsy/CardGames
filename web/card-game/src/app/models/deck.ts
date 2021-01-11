@@ -66,10 +66,50 @@ export class Deck {
     }
 
 
-
+    /**
+     * Return a shallow copy sorted list
+     * @param cards 
+     * @param groupSuits 
+     */
     public static sort(cards: Card[], groupSuits: boolean = true): Card[] {
-        return cards.sort((cardA, cardB) => cardA.cardValue(groupSuits) - cardB.cardValue(groupSuits))
+        return [...cards].sort((cardA, cardB) => cardA.cardValue(groupSuits) - cardB.cardValue(groupSuits))
     }
+
+    /**
+     * return all valid pairs (or triplets or quads) from a list of cards
+     * @param cards 
+     */
+    public static getDuplicates(cards: Card[], count: number = 2): Card[][] {
+        if (cards.length < count) {
+            return [];
+        }
+
+        let pairs = [];
+
+        let sorted = Deck.sort(cards);
+        do {
+            let allSame = true;
+            for (let i = 0; i < count; i++) {
+                if (sorted[i].value != sorted[0].value) {
+                    allSame = false;
+                    break;
+                }
+            }
+            if (allSame) {
+                let set = [];
+                for (let i = 0; i < count; i++) {
+                    set.push(sorted[i]);
+                }
+                pairs.push(set);
+                sorted.splice(0, count);
+            } else {
+                sorted.splice(0, 1);
+            }
+        } while (sorted.length > 1)
+
+        return pairs;
+    }
+
 
     public static getSuitCount(cards: Card[]): Map<Suit, number> {
         let count = new Map<Suit, number>();
@@ -129,11 +169,11 @@ export class Deck {
         let fullHouseValue: number = -1;
 
         if (sortedCards[0].value == sortedCards[1].value && sortedCards[3].value == sortedCards[4].value) {
-            if (sortedCards[2].value == sortedCards[0].value){
+            if (sortedCards[2].value == sortedCards[0].value) {
                 isFullHouse = true;
                 /// valuea, valuea, valuea, valueb, valueb
                 fullHouseValue = sortedCards[2].cardValue();
-            }else if(sortedCards[2].value == sortedCards[4].value) {
+            } else if (sortedCards[2].value == sortedCards[4].value) {
                 isFullHouse = true;
                 /// valuea, valuea, valueb, valueb, valueb
                 fullHouseValue = sortedCards[4].cardValue();
@@ -143,7 +183,7 @@ export class Deck {
         for (let card of sortedCards) {
             if (isStraight && card.value != lowest + 1) {
                 isStraight = false;
-            }else{
+            } else {
                 lowest = card.value;
             }
             if (isFlush && card.suit != suit) {
