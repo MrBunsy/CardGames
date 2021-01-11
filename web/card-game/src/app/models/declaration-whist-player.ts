@@ -7,11 +7,12 @@ import { Deck } from './deck';
 
 export interface CardPlayer {
     dealHand(cards: Card[]);
+    name: string;
 }
 
 export interface DeclarationWhistPlayer extends CardPlayer {
 
-    name: string;
+    
 
     startRound(allPlayers: DeclarationWhistPlayer[]);
 

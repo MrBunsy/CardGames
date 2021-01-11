@@ -49,4 +49,30 @@ export class Card {
         return other.value == this.value && other.suit == this.suit && other.faceUp == this.faceUp;
     }
 
+    private suitValue(): number {
+        switch (this.suit) {
+            case "Clubs":
+                return 0;
+            case "Diamonds":
+                return 1;
+            case "Hearts":
+                return 2;
+            case "Spades":
+                return 3;
+        }
+    }
+
+    /**
+     * A numerical value for this card to compare with other cards
+     * @param groupSuits If true, 2 of spades is worth more than Ace of hearts
+     * if false, Ace of clubs is worth 1 more than King of spades (president comparison)
+     */
+    public cardValue(groupSuits: boolean = false, acesHigh = true): number {
+        if (groupSuits) {
+            return this.value + 13 * this.suitValue();
+        } else {
+            return this.value * 4 + this.suitValue();
+        }
+    }
+
 }

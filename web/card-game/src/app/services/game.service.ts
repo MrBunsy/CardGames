@@ -6,7 +6,8 @@ import { Observable, Subscription, ReplaySubject, of, BehaviorSubject, merge } f
 import { map, filter, delay, concatMap, combineLatest } from 'rxjs/operators';
 import { Card } from '../models/card';
 import { PresidentPlayer } from '../models/PresidentPlayer';
-import { GameEvent, IGame } from '../models/game';
+import { Game, GameEvent, IGame } from '../models/game';
+import { LocalPresidentGame } from '../models/president';
 
 class PlayerWithInfo {
   constructor(public player: DeclarationWhistPlayer) { }
@@ -118,15 +119,21 @@ export class GameService implements OnDestroy {
   }
 
   private isEventFromLocalPlayer(event: GameEvent): boolean {
-
-    if (event.type == "Bid" || event.type == "CardPlayed" || event.type == "Trumps") {//deliberately exclude TrickWon, since this didn't directly originate from player action
-      return (<EventInfo>event.event).playerIndex == this.localPlayerIndex;
+    switch (event.game) {
+      case Game.DeclarationWhist:
+        if (event.type == "Bid" || event.type == "CardPlayed" || event.type == "Trumps") {//deliberately exclude TrickWon, since this didn't directly originate from player action
+          return (<EventInfo>event.event).playerIndex == this.localPlayerIndex;
+        }
+        break;
     }
 
     return false;
   }
 
-  public createPresident(players: PresidentPlayer[]){
+  public createPresident(players: PresidentPlayer[]) {
+    this.tidyUpGame();
+
+    this.game = new LocalPresidentGame(players);
 
   }
 
@@ -151,22 +158,22 @@ export class GameService implements OnDestroy {
 
   }
 
-  private subscribetoGame(){
-  //isn't there a thing to make an observable hot? shouldn't we use that?
-  this.subscriptions.push(this.game.getGameEvents().pipe(
-    //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
-    //extra funky logic to not delay player's events
-    concatMap(event => {
-      if (this.isEventFromLocalPlayer(event)) {
-        return of(event)
-      } else {
-        return of(event).pipe(delay(this.eventInterval))
+  private subscribetoGame() {
+    //isn't there a thing to make an observable hot? shouldn't we use that?
+    this.subscriptions.push(this.game.getGameEvents().pipe(
+      //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
+      //extra funky logic to not delay player's events
+      concatMap(event => {
+        if (this.isEventFromLocalPlayer(event)) {
+          return of(event)
+        } else {
+          return of(event).pipe(delay(this.eventInterval))
+        }
       }
-    }
-    )
-  ).subscribe(
-    event => this.processGameEvent(event)
-  ));
+      )
+    ).subscribe(
+      event => this.processGameEvent(event)
+    ));
   }
 
   public getGameEvents(): Observable<GameEvent> {
@@ -185,7 +192,7 @@ export class GameService implements OnDestroy {
       player.nextRound();
     }
     this.tricks = 0;
-    
+
     this.game.start();
   }
 
@@ -235,7 +242,7 @@ export class GameService implements OnDestroy {
    * Will only work for a local player in debug
    * @param player 
    */
-  public getCardsFor(player: DeclarationWhistPlayer): Observable<Card[]>{
+  public getCardsFor(player: DeclarationWhistPlayer): Observable<Card[]> {
     return this.getPlayerCardCounts().pipe(
       map(() => {
         let index = this.players.findIndex(test => test.player == player)
