@@ -1,4 +1,4 @@
-import { DeclarationWhistPlayer } from './declaration-whist-player';
+import { CardPlayer, DeclarationWhistPlayer } from './declaration-whist-player';
 import { Deck } from './deck';
 import { first } from 'rxjs/operators';
 import { ReplaySubject, Observable } from 'rxjs';
@@ -21,7 +21,7 @@ import { Game, GameEvent, IGame } from './game';
  */
 
 export class EventInfo {
-    public player: DeclarationWhistPlayer;
+    public player: CardPlayer;
     public playerIndex: number;
 }
 
@@ -29,8 +29,12 @@ export class BidEvent extends EventInfo {
     public bid: number;
 }
 
-export class CardInTrickEvent extends EventInfo {
-    public card: Card;
+export class CardsInTrickEvent extends EventInfo {
+    // public card: Card[];
+    //whist only ever has one card per player per trick, but other games can have more
+    constructor(public cards: Card[], public player: CardPlayer, public playerIndex) {
+        super();
+    }
 }
 export class TrumpsEvent extends EventInfo {
     public suit: Suit;
@@ -64,9 +68,9 @@ class PlayerInfo extends PlayerScores {
 }
 
 export class Trick {
-    constructor(public openedBy: DeclarationWhistPlayer) { }
-    public cards: CardInTrickEvent[] = [];
-    public winner: DeclarationWhistPlayer = null;
+    constructor(public openedBy: CardPlayer) { }
+    public cards: CardsInTrickEvent[] = [];
+    public winner: CardPlayer = null;
 }
 
 
@@ -83,7 +87,7 @@ export enum DeclarationWhistGameEventsType {
 export class DeclarationWhistEvent extends GameEvent {
     //turns out enums are a PITA in TS/angular
     constructor(public type: "MatchStart" | "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished",
-        public event: BidEvent | TrumpsEvent | CardInTrickEvent | EventInfo | ResultsEvent = null,
+        public event: BidEvent | TrumpsEvent | CardsInTrickEvent | EventInfo | ResultsEvent = null,
     ) {
         super(type, event, Game.DeclarationWhist);
     }
@@ -162,7 +166,7 @@ export class LocalDeclarationWhist implements IGame {
             for (let bid of this.bids) {
                 if (bid.bid > highestBid) {
                     highestBid = bid.bid;
-                    highestBidder = bid.player;
+                    highestBidder = bid.player as DeclarationWhistPlayer;
                 }
             }
 
@@ -200,16 +204,16 @@ export class LocalDeclarationWhist implements IGame {
         this.tricks.push(new Trick(player));
 
 
-        player.playCard([], lastTrick).pipe(first()).subscribe(card => this.playCard({ card: card, player: player, playerIndex: this.players.indexOf(player) }))
+        player.playCard([], lastTrick).pipe(first()).subscribe(card => this.playCard({ cards: [card], player: player, playerIndex: this.players.indexOf(player) }))
     }
 
     /**
      * player is playing a card on a trick.
      * @param card 
      */
-    private playCard(card: CardInTrickEvent) {
+    private playCard(card: CardsInTrickEvent) {
         if (this.verbose) {
-            console.log(card.player.name + " played " + card.card.toString());
+            console.log(card.player.name + " played " + card.cards.toString());
         }
 
         this.playerInfos[card.playerIndex].cards--;
@@ -230,7 +234,7 @@ export class LocalDeclarationWhist implements IGame {
                 lastTrick = this.tricks[this.tricks.length - 2];
             }
 
-            this.players[nextPlayer].playCard(currentTrick.cards, lastTrick).pipe(first()).subscribe(card => this.playCard({ card: card, player: this.players[nextPlayer], playerIndex: nextPlayer }))
+            this.players[nextPlayer].playCard(currentTrick.cards, lastTrick).pipe(first()).subscribe(card => this.playCard({ cards: [card], player: this.players[nextPlayer], playerIndex: nextPlayer }))
         } else {
             this.endTrick();
         }
@@ -257,17 +261,17 @@ export class LocalDeclarationWhist implements IGame {
         let currentTrick = this.tricks[this.tricks.length - 1];
 
 
-        let highestInSuit: CardInTrickEvent = currentTrick.cards[0];
-        let suit = highestInSuit.card.suit;
-        let highestTrump: CardInTrickEvent = null
+        let highestInSuit: CardsInTrickEvent = currentTrick.cards[0];
+        let suit = highestInSuit.cards[0].suit;
+        let highestTrump: CardsInTrickEvent = null
 
 
         //find highest card of the suit and/or highest trump
         for (let cardInTrick of currentTrick.cards) {
-            if (cardInTrick.card.suit == suit && cardInTrick.card.value > highestInSuit.card.value) {
+            if (cardInTrick.cards[0].suit == suit && cardInTrick.cards[0].value > highestInSuit.cards[0].value) {
                 highestInSuit = cardInTrick;
             }
-            if (cardInTrick.card.suit == this.trumps && (highestTrump == null || cardInTrick.card.value > highestTrump.card.value)) {
+            if (cardInTrick.cards[0].suit == this.trumps && (highestTrump == null || cardInTrick.cards[0].value > highestTrump.cards[0].value)) {
                 highestTrump = cardInTrick;
             }
         }
@@ -275,9 +279,9 @@ export class LocalDeclarationWhist implements IGame {
         let winner: DeclarationWhistPlayer;
 
         if (highestTrump != null) {
-            winner = highestTrump.player;
+            winner = highestTrump.player as DeclarationWhistPlayer;
         } else {
-            winner = highestInSuit.player;
+            winner = highestInSuit.player as DeclarationWhistPlayer;
         }
 
         currentTrick.winner = winner;

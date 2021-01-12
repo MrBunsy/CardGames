@@ -1,8 +1,8 @@
 import { Observable, of } from "rxjs";
 import { Card } from "./card";
 import { Deck } from "./deck";
+import { Trick } from "./declaration-whist";
 import { CardPlayer } from "./declaration-whist-player";
-import { PresidentTrick } from "./president";
 
 
 /**
@@ -48,10 +48,19 @@ export class PresidentPlayer implements CardPlayer {
     }
 
     /**
+     * Inform any card-counting bots of what happened in a completed trick 
+     * (otherwise anything after their last pass/play would not be known)
+     * @param trick 
+     */
+    public finishTrick(trick: Trick){
+
+    }
+
+    /**
      * this player's turn, either play cards or return with [] for pass
      * @param trickSoFar 
      */
-    public playOrPass(trickSoFar: PresidentTrick): Observable<Card[]> {
+    public playOrPass(trickSoFar: Trick): Observable<Card[]> {
         //must be implemented by concrete implementation
         throw new Error("Method not implemented.");
     }
@@ -86,7 +95,7 @@ export class PresidentPlayer implements CardPlayer {
  * Plays valid cards but with simplistic strategy
  */
 export class MoronPresidentPlayer extends PresidentPlayer {
-    public playOrPass(trickSoFar: PresidentTrick): Observable<Card[]> {
+    public playOrPass(trickSoFar: Trick): Observable<Card[]> {
         let topCards = trickSoFar.cards[trickSoFar.cards.length].cards;
         switch (topCards.length) {
             case 1:

@@ -3,7 +3,7 @@ import { DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player'
 import { Observable } from 'rxjs';
 import { Card } from 'src/app/models/card';
 import { map } from 'rxjs/operators';
-import { GameService } from 'src/app/services/game.service';
+import { WhistGameService } from 'src/app/services/game.service';
 
 @Component({
   selector: 'remote-player-hand',
@@ -18,7 +18,7 @@ export class RemotePlayerHandComponent implements OnInit {
 
   public cards$: Observable<Card[]>;
 
-  constructor(private game: GameService) { }
+  constructor(private game: WhistGameService) { }
 
   ngOnInit() {
     if (this.openHand) {

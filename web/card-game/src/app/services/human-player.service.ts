@@ -3,7 +3,7 @@ import { Subject, ReplaySubject, Observable, Subscription, BehaviorSubject } fro
 import { Suit, Card } from '../models/card';
 import { LocalHumanDeclarationWhist, DeclarationWhistPlayer } from '../models/declaration-whist-player';
 import { first } from 'rxjs/operators';
-import { GameService } from './game.service';
+import { WhistGameService } from './game.service';
 
 export type PlayerState = "Waiting" | "ChoosingBid" | "ChoosingTrumps" | "ChoosingCard";
 
@@ -46,7 +46,7 @@ export class HumanPlayerService implements OnDestroy {
   private player: LocalHumanDeclarationWhist;
 
 
-  constructor(private gameService: GameService) { }
+  constructor(private gameService: WhistGameService) { }
 
   public createPlayer(name: string = "You"): LocalHumanDeclarationWhist {
     this.player = new LocalHumanDeclarationWhist(name, this.bid$, this.trumps$, this.playCard$);

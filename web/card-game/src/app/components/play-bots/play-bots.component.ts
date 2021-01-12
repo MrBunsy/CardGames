@@ -3,7 +3,7 @@ import { MoronDeclarationWhist, LocalHumanDeclarationWhist, DeclarationWhistPlay
 import { LocalDeclarationWhist, DeclarationWhistEvent } from 'src/app/models/declaration-whist';
 import { DeckService } from 'src/app/services/deck.service';
 import { Subscription, Observable } from 'rxjs';
-import { GameService } from 'src/app/services/game.service';
+import { WhistGameService } from 'src/app/services/game.service';
 import { CleverBotDeclarationWhist } from 'src/app/models/clever-bot';
 
 @Component({
@@ -25,7 +25,7 @@ export class PlayBotsComponent implements OnInit, OnDestroy, AfterViewInit {
 
   @ViewChild("logDiv", { static: true }) logDiv: ElementRef;
 
-  constructor(private game: GameService) {
+  constructor(private game: WhistGameService) {
 
     this.players = [
       new MoronDeclarationWhist("Ted"),

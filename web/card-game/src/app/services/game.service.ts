@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
-import { DeclarationWhistPlayer } from '../models/declaration-whist-player';
-import { LocalDeclarationWhist, TrumpsEvent, BidEvent, Trick, CardInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
+import { CardPlayer, DeclarationWhistPlayer } from '../models/declaration-whist-player';
+import { LocalDeclarationWhist, TrumpsEvent, BidEvent, Trick, CardsInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
 import { Observable, Subscription, ReplaySubject, of, BehaviorSubject, merge } from 'rxjs';
 import { map, filter, delay, concatMap, combineLatest } from 'rxjs/operators';
 import { Card } from '../models/card';
@@ -22,26 +22,64 @@ class PlayerWithInfo {
     this.turnToPlay = false;
   }
 }
-/**
- * Not wanting a game to expose all its inner state, track what state we want here, purely from game events.
- * 
- * Then we can replay a game back at whatever speed we like, without altering the game class
- */
 @Injectable({
   providedIn: 'root'
 })
 export class GameService implements OnDestroy {
+  protected game: IGame;
+  protected players: PlayerWithInfo[];
+  protected subscriptions: Subscription[] = [];
 
-  private game: IGame;
-  private players: PlayerWithInfo[];
-  private subscriptions: Subscription[] = [];
+  protected gameEventsOut$: ReplaySubject<GameEvent> = new ReplaySubject<GameEvent>(10);
 
-  private gameEventsOut$: ReplaySubject<GameEvent> = new ReplaySubject<GameEvent>(10);
+  protected currentTurnEmitter: ReplaySubject<DeclarationWhistPlayer> = new ReplaySubject<DeclarationWhistPlayer>(1);
+  protected currentRoundEmitter: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  protected roundInProgressEmittier: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+
+  /**
+       * Return true when it's the requested player's time to play a card, false otherwise
+       * @param player 
+       */
+  public getTurnToPlayFor(player: CardPlayer): Observable<boolean> {
+    return this.currentTurnEmitter.asObservable().pipe(
+      map(currentPlayer => currentPlayer === player)
+    );
+  }
+
+  protected tidyUpGame() {
+    for (let sub of this.subscriptions) {
+      sub.unsubscribe();
+    }
+    this.subscriptions = [];
+
+    this.game = null;
+    this.players = [];
+    this.gameEventsOut$ = new ReplaySubject<GameEvent>(10);
+  }
+
+  ngOnDestroy(): void {
+    this.tidyUpGame();
+  }
+}
+/**
+ * Original intention:
+ * 
+ * Not wanting a game to expose all its inner state, track what state we want here, purely from game events.
+ * 
+ * Then we can replay a game back at whatever speed we like, without altering the game class
+ * 
+ */
+@Injectable({
+  providedIn: 'root'
+})
+export class WhistGameService extends GameService {
+
+
+
+
   private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
   private tricks: number = 0;
-  private currentTurnEmitter: ReplaySubject<DeclarationWhistPlayer> = new ReplaySubject<DeclarationWhistPlayer>(1);
-  private currentRoundEmitter: BehaviorSubject<number> = new BehaviorSubject<number>(0);
-  private roundInProgressEmittier: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  
 
   private currentTrick: Trick = null;
 
@@ -49,7 +87,10 @@ export class GameService implements OnDestroy {
   private rounds: number = 0;
   private eventInterval: number = 1000;
 
-  constructor(private deckService: DeckService) {
+
+
+  constructor() {
+    super()
   }
   /**
    * Set the player as being to play next.
@@ -69,7 +110,7 @@ export class GameService implements OnDestroy {
     switch (event.type) {
       case "CardPlayed":
 
-        let cardEvent = <CardInTrickEvent>event.event;
+        let cardEvent = <CardsInTrickEvent>event.event;
         if (this.currentTrick == null) {
           this.currentTrick = new Trick(cardEvent.player)
         }
@@ -128,13 +169,6 @@ export class GameService implements OnDestroy {
     }
 
     return false;
-  }
-
-  public createPresident(players: PresidentPlayer[]) {
-    this.tidyUpGame();
-
-    this.game = new LocalPresidentGame(players);
-
   }
 
   /**
@@ -299,15 +333,7 @@ export class GameService implements OnDestroy {
     )
   }
 
-  /**
-   * Return true when it's the requested player's time to play a card, false otherwise
-   * @param player 
-   */
-  public getTurnToPlayFor(player: DeclarationWhistPlayer): Observable<boolean> {
-    return this.currentTurnEmitter.asObservable().pipe(
-      map(currentPlayer => currentPlayer === player)
-    );
-  }
+
 
   public getCurrentTrick(): Observable<Trick> {
 
@@ -335,16 +361,10 @@ export class GameService implements OnDestroy {
       map(event => <ResultsEvent>event.event)
     )
   }
-  private tidyUpGame() {
-    for (let sub of this.subscriptions) {
-      sub.unsubscribe();
-    }
-    this.subscriptions = [];
+  protected tidyUpGame() {
+    super.tidyUpGame();
 
-    this.game = null;
-    this.players = [];
 
-    this.gameEventsOut$ = new ReplaySubject<GameEvent>(10);
     this.trickEmitter = new ReplaySubject<Trick>(1);
     this.tricks = 0;
     this.currentTurnEmitter = new ReplaySubject<DeclarationWhistPlayer>(1);
@@ -355,10 +375,5 @@ export class GameService implements OnDestroy {
 
     this.rounds = 0;
   }
-
-  ngOnDestroy(): void {
-    this.tidyUpGame();
-  }
-
 
 }

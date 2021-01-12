@@ -6,7 +6,7 @@ import { DeclarationWhistPlayer, LocalHumanDeclarationWhist, MoronDeclarationWhi
 import { Suit, Card } from 'src/app/models/card';
 import { HumanPlayerService, PlayerState } from 'src/app/services/human-player.service';
 import { tap } from 'rxjs/operators';
-import { GameService } from 'src/app/services/game.service';
+import { WhistGameService } from 'src/app/services/game.service';
 import { CleverBotDeclarationWhist } from 'src/app/models/clever-bot';
 
 @Component({
@@ -34,7 +34,7 @@ export class PlayAgainstBotsComponent implements OnInit, OnDestroy {
   
 
 
-  constructor(private deckService: DeckService, private player: HumanPlayerService, private game: GameService) {
+  constructor(private deckService: DeckService, private player: HumanPlayerService, private game: WhistGameService) {
 
 
 

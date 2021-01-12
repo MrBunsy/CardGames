@@ -1,7 +1,7 @@
 import { DeclarationWhistPlayer } from './declaration-whist-player';
 import { Card, Suit, suitArray } from './card';
 import { ReplaySubject, Observable, of } from 'rxjs';
-import { TrumpsEvent, BidEvent, CardInTrickEvent, Trick } from './declaration-whist';
+import { TrumpsEvent, BidEvent, CardsInTrickEvent, Trick } from './declaration-whist';
 import { Deck } from './deck';
 
 //three different versions of this now... oops
@@ -177,9 +177,9 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Get teh suit we should be following for a trick. Doesn't take into accoutn anyone trumping it
      * @param trick 
      */
-    private getLeadingSuitFromTrick(trick: CardInTrickEvent[]): Suit {
+    private getLeadingSuitFromTrick(trick: CardsInTrickEvent[]): Suit {
         if (trick.length > 0) {
-            return trick[0].card.suit;
+            return trick[0].cards[0].suit;
         }
 
         return null;
@@ -189,10 +189,10 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Returns true if trick was lead in trumps, or has been trumped
      * @param trick 
      */
-    private hasTrickBeenTrumped(trick: CardInTrickEvent[]): boolean {
+    private hasTrickBeenTrumped(trick: CardsInTrickEvent[]): boolean {
 
         for (let cardInTrick of trick) {
-            if (cardInTrick.card.suit == this.trumps.suit) {
+            if (cardInTrick.cards[0].suit == this.trumps.suit) {
                 return true;
             }
         }
@@ -204,8 +204,8 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Best guess at winning by playing a specific card
      * @param card 
      */
-    private probablityToWinTrick(trick: CardInTrickEvent[], card: Card): number {
-        if (!this.possibleToWinTrick(trick.map(trick => trick.card), card)) {
+    private probablityToWinTrick(trick: CardsInTrickEvent[], card: Card): number {
+        if (!this.possibleToWinTrick(trick.map(trick => trick.cards[0]), card)) {
             return 0;
         }
         let chanceOfHighest = this.chanceOfBeingHighestInSuit(card);
@@ -377,9 +377,9 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
 
             //update all our tracking of whatnot
             for (let card of previousTrick.cards) {
-                this.allPlayers[card.playerIndex].playedCards.push(card.card);
-                this.seenCards.push(card.card);
-                if (card.card.suit != followingSuit) {
+                this.allPlayers[card.playerIndex].playedCards.push(card.cards[0]);
+                this.seenCards.push(card.cards[0]);
+                if (card.cards[0].suit != followingSuit) {
                     //this player has run out of this suit
                     this.allPlayers[card.playerIndex].runOutOfSuit(followingSuit);
                 }
@@ -397,7 +397,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    public playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card> {
+    public playCard(trick: CardsInTrickEvent[], previousTrick: Trick): Observable<Card> {
 
         this.processPreviousTrick(previousTrick);
 
@@ -405,8 +405,8 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
         let validCards = this.cards.slice();
 
         let trumped = false;
-        for (let card of trick.map(trick => trick.card)) {
-            if (card.suit == this.trumps.suit) {
+        for (let card of trick.map(trick => trick.cards)) {
+            if (card[0].suit == this.trumps.suit) {
                 trumped = true;
                 break;
             }
@@ -418,7 +418,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
 
         if (trick.length > 0) {
             //have to follow suit if we can
-            let suit = trick[0].card.suit;
+            let suit = trick[0].cards[0].suit;
             let sortedCards = Deck.getCardsInSuits(this.cards);
             if (sortedCards[suit].length > 0) {
                 validCards = sortedCards[suit].slice();

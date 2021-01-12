@@ -2,6 +2,7 @@ import { Observable, ReplaySubject } from "rxjs";
 import { first } from "rxjs/operators";
 import { Card } from "./card";
 import { Deck } from "./deck";
+import { Trick, CardsInTrickEvent } from "./declaration-whist";
 import { Game, GameEvent, IGame } from "./game";
 import { PresidentPlayer } from "./PresidentPlayer";
 
@@ -17,24 +18,24 @@ export class PresidentGameEvent extends GameEvent {
     }
 }
 
-export class PresidentEventInfo {
-    public player: PresidentPlayer;
-    //current position in this round
-    public playerIndex: number;
-}
+// export class PresidentEventInfo {
+//     public player: PresidentPlayer;
+//     //current position in this round
+//     public playerIndex: number;
+// }
 
-export class CardsInTrickEvent extends PresidentEventInfo {
-    constructor(public cards: Card[], public player: PresidentPlayer, public playerIndex) {
-        super();
-    }
+// export class CardsInTrickEvent extends PresidentEventInfo {
+//     constructor(public cards: Card[], public player: PresidentPlayer, public playerIndex) {
+//         super();
+//     }
 
-}
+// }
 
-export class PresidentTrick {
-    constructor(public openedBy: PresidentPlayer) { }
-    public cards: CardsInTrickEvent[] = [];
-    public winner: PresidentPlayer = null;
-}
+// export class PresidentTrick {
+//     constructor(public openedBy: PresidentPlayer) { }
+//     public cards: CardsInTrickEvent[] = [];
+//     public winner: PresidentPlayer = null;
+// }
 
 /**
  * Plan: A Match lasts for an undetermined number of rounds.
@@ -48,7 +49,7 @@ export class LocalPresidentGame implements IGame {
 
     private gameEvents: ReplaySubject<PresidentGameEvent> = new ReplaySubject<PresidentGameEvent>(10);
     private currentPlayOrder: PresidentPlayer[] = [];
-    private tricks: PresidentTrick[];
+    private tricks: Trick[];
     private playersFinished: number;
 
     constructor(public players: PresidentPlayer[], private verbose = true) {
@@ -116,7 +117,7 @@ export class LocalPresidentGame implements IGame {
         if (this.verbose) {
             console.log("Trick started by " + player.name);
         }
-        let newTrick = new PresidentTrick(player);
+        let newTrick = new Trick(player);
         this.tricks.push(newTrick);
 
         player.playOrPass(newTrick).pipe(first()).subscribe(cards => this.playCards(player, cards))

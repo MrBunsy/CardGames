@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
 import { Observable, merge, combineLatest, of } from 'rxjs';
-import { GameService } from 'src/app/services/game.service';
+import { WhistGameService } from 'src/app/services/game.service';
 import { PlayerState, HumanPlayerService } from 'src/app/services/human-player.service';
 import { map, tap } from 'rxjs/operators';
 
@@ -24,7 +24,7 @@ export class TableComponent implements OnInit {
   public showTrumps$: Observable<boolean>;
   public validBids$: Observable<number[]>;
 
-  constructor(private game: GameService, private player: HumanPlayerService) {
+  constructor(private game: WhistGameService, private player: HumanPlayerService) {
     this.roundRunning$ = this.game.getRoundInProgress();
     // this.playerState$ = player.playerState$.asObservable();
     this.validBids$ = this.player.validBids$.asObservable();

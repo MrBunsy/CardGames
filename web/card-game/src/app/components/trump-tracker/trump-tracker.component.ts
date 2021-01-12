@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { GameService } from 'src/app/services/game.service';
+import { WhistGameService } from 'src/app/services/game.service';
 import { Suit, Card } from 'src/app/models/card';
 import { Observable } from 'rxjs';
 import { tap, map, filter } from 'rxjs/operators';
@@ -14,7 +14,7 @@ export class TrumpTrackerComponent implements OnInit {
   public suitCard$: Observable<Card>;
   public chooser$: Observable<string>;
 
-  constructor(private game: GameService) {
+  constructor(private game: WhistGameService) {
     this.suitCard$ = this.game.getTrumpsEvent().pipe(
       map(event => {
         if (event) {

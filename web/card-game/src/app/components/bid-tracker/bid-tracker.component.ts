@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { GameService } from 'src/app/services/game.service';
+import { WhistGameService } from 'src/app/services/game.service';
 import { DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -15,7 +15,7 @@ export class BidTrackerComponent implements OnInit {
   public bid$: Observable<string>;
   public won$: Observable<number>;
 
-  constructor(private game: GameService) {
+  constructor(private game: WhistGameService) {
 
   }
 

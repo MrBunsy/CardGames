@@ -1,7 +1,7 @@
 import { Card, Suit, suitArray } from './card';
 import { Game } from './game';
 import { Observable, of, ReplaySubject, Subject } from 'rxjs';
-import { BidEvent, CardInTrickEvent, TrumpsEvent, Trick } from './declaration-whist';
+import { BidEvent, CardsInTrickEvent, TrumpsEvent, Trick } from './declaration-whist';
 import { tap, map } from 'rxjs/operators';
 import { Deck } from './deck';
 
@@ -37,7 +37,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card>;
+    playCard(trick: CardsInTrickEvent[], previousTrick: Trick): Observable<Card>;
 
 
     /**
@@ -127,11 +127,11 @@ export class LocalHumanDeclarationWhist implements DeclarationWhistPlayer {
         this.cards$.next(this.cards);
     }
 
-    playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card> {
+    playCard(trick: CardsInTrickEvent[], previousTrick: Trick): Observable<Card> {
         let validCards = this.cards.slice();
         if (trick.length > 0) {
             //suit to follow
-            let followSuit = trick[0].card.suit;
+            let followSuit = trick[0].cards[0].suit;
             let suitCount = Deck.getCardsInSuits(this.cards);
 
             if (suitCount[followSuit].length > 0) {
@@ -233,7 +233,7 @@ export class MoronDeclarationWhist implements DeclarationWhistPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    public playCard(trick: CardInTrickEvent[], previousTrick: Trick): Observable<Card> {
+    public playCard(trick: CardsInTrickEvent[], previousTrick: Trick): Observable<Card> {
 
         let cardIndex = 0;
 
@@ -242,7 +242,7 @@ export class MoronDeclarationWhist implements DeclarationWhistPlayer {
             cardIndex = Math.floor(Math.random() * this.cards.length);
         } else {
             //have to follow suit if we can
-            let suit = trick[0].card.suit;
+            let suit = trick[0].cards[0].suit;
             let sortedCards = Deck.getCardsInSuits(this.cards);
             if (sortedCards[suit].length > 0) {
                 let wantCard = sortedCards[suit][Math.floor(Math.random() * sortedCards[suit].length)];
