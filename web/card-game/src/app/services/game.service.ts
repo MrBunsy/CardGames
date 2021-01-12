@@ -10,7 +10,7 @@ import { Game, GameEvent, IGame } from '../models/game';
 import { LocalPresidentGame } from '../models/president';
 
 //used to be independant class, now making compatible with other CardPlayers so I don't need an equivilant over in president
-class PlayerWithInfo implements CardPlayer{
+class PlayerWithInfo implements CardPlayer {
   constructor(public player: DeclarationWhistPlayer) { }
   dealHand(cards: Card[]) {
     throw new Error('Method not implemented.');
@@ -40,11 +40,21 @@ export class GameService implements OnDestroy {
   protected currentTurnEmitter: ReplaySubject<DeclarationWhistPlayer> = new ReplaySubject<DeclarationWhistPlayer>(1);
   protected currentRoundEmitter: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   protected roundInProgressEmittier: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
+  protected eventInterval: number = 1000;
+
+
+  protected processGameEvent(event: GameEvent) {
+    //override this
+  }
+  protected isEventFromLocalPlayer(event: GameEvent): boolean {
+    //override this
+    return false;
+  }
 
   /**
-       * Return true when it's the requested player's time to play a card, false otherwise
-       * @param player 
-       */
+   * Return true when it's the requested player's time to play a card, false otherwise
+   * @param player 
+   */
   public getTurnToPlayFor(player: CardPlayer): Observable<boolean> {
     return this.currentTurnEmitter.asObservable().pipe(
       map(currentPlayer => currentPlayer === player)
@@ -60,6 +70,42 @@ export class GameService implements OnDestroy {
     this.game = null;
     this.players = [];
     this.gameEventsOut$ = new ReplaySubject<GameEvent>(10);
+  }
+
+
+
+  public start() {
+    if (!this.game) {
+      console.warn("No game created yet");
+      return;
+    }
+
+    this.game.start();
+  }
+
+  public getGameEvents(): Observable<GameEvent> {
+    return this.gameEventsOut$.asObservable().pipe(
+
+    )
+  }
+
+
+  protected subscribetoGame() {
+    //isn't there a thing to make an observable hot? shouldn't we use that?
+    this.subscriptions.push(this.game.getGameEvents().pipe(
+      //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
+      //extra funky logic to not delay player's events
+      concatMap(event => {
+        if (this.isEventFromLocalPlayer(event)) {
+          return of(event)
+        } else {
+          return of(event).pipe(delay(this.eventInterval))
+        }
+      }
+      )
+    ).subscribe(
+      event => this.processGameEvent(event)
+    ));
   }
 
   ngOnDestroy(): void {
@@ -78,20 +124,11 @@ export class GameService implements OnDestroy {
   providedIn: 'root'
 })
 export class WhistGameService extends GameService {
-
-
-
-
   private trickEmitter: ReplaySubject<Trick> = new ReplaySubject<Trick>(1);
   private tricks: number = 0;
-  
-
   private currentTrick: Trick = null;
-
   private localPlayerIndex: number;
   private rounds: number = 0;
-  private eventInterval: number = 1000;
-
 
 
   constructor() {
@@ -110,61 +147,18 @@ export class WhistGameService extends GameService {
 
   }
 
-  private processGameEvent(event: GameEvent) {
-
-    switch (event.type) {
-      case "CardPlayed":
-
-        let cardEvent = <CardsInTrickEvent>event.event;
-        if (this.currentTrick == null) {
-          this.currentTrick = new Trick(cardEvent.player)
-        }
-        this.currentTrick.cards.push(cardEvent);
-        this.trickEmitter.next(this.currentTrick);
-
-        (<PlayerWithInfo>this.players[cardEvent.playerIndex]).cards--;
-        if (this.currentTrick.cards.length < 4) {
-          this.setTurnToPlay((cardEvent.playerIndex + 1) % this.players.length);
-        } else {
-          this.setTurnToPlay();
-        }
-        break;
-      case "TrickWon":
-        let trickWonEvent = <EventInfo>event.event;
-        this.currentTrick.winner = trickWonEvent.player;
-        (<PlayerWithInfo>this.players[trickWonEvent.playerIndex]).tricksWon++;
-        this.trickEmitter.next(this.currentTrick);
-        this.tricks++;
-        this.currentTrick = null;
-        if (this.tricks < 13) {
-          this.setTurnToPlay(trickWonEvent.playerIndex);
-        } else {
-          //no more turns until a new match
-          this.setTurnToPlay();
-        }
-        break;
-      case "Trumps":
-        //whoever chose trumps gets to play next
-        this.setTurnToPlay((<TrumpsEvent>event.event).playerIndex);
-        break;
-      case "MatchStart":
-        this.currentRoundEmitter.next(this.rounds);
-        this.roundInProgressEmittier.next(true);
-        break;
-      case "MatchFinished":
-
-        this.roundInProgressEmittier.next(false);
-        this.currentRoundEmitter.next(this.rounds);
-        this.rounds++;
 
 
-        break;
-    }
-    console.log("Event: " + event.type);
-    this.gameEventsOut$.next(event)
+
+
+  public getMatchStart(): Observable<void> {
+    return this.getGameEvents().pipe(
+      filter(event => event.type == "MatchStart"),
+      map(() => null)
+    );
   }
 
-  private isEventFromLocalPlayer(event: GameEvent): boolean {
+  protected isEventFromLocalPlayer(event: GameEvent): boolean {
     switch (event.game) {
       case Game.DeclarationWhist:
         if (event.type == "Bid" || event.type == "CardPlayed" || event.type == "Trumps") {//deliberately exclude TrickWon, since this didn't directly originate from player action
@@ -197,42 +191,19 @@ export class WhistGameService extends GameService {
 
   }
 
-  private subscribetoGame() {
-    //isn't there a thing to make an observable hot? shouldn't we use that?
-    this.subscriptions.push(this.game.getGameEvents().pipe(
-      //https://observablehq.com/@btheado/rxjs-inserting-a-delay-between-each-item-of-a-stream
-      //extra funky logic to not delay player's events
-      concatMap(event => {
-        if (this.isEventFromLocalPlayer(event)) {
-          return of(event)
-        } else {
-          return of(event).pipe(delay(this.eventInterval))
-        }
-      }
-      )
-    ).subscribe(
-      event => this.processGameEvent(event)
-    ));
-  }
 
-  public getGameEvents(): Observable<GameEvent> {
-    return this.gameEventsOut$.asObservable().pipe(
 
-    )
-  }
+  
 
 
   public start() {
-    if (!this.game) {
-      console.warn("No game created yet");
-      return;
-    }
+
     for (let player of this.players) {
       (<PlayerWithInfo>player).nextRound();
     }
     this.tricks = 0;
 
-    this.game.start();
+    super.start();
   }
 
   private _getPlayerCardCounts(): number[] {
@@ -290,12 +261,61 @@ export class WhistGameService extends GameService {
   //   )
   // }
 
-  public getMatchStart(): Observable<void> {
-    return this.getGameEvents().pipe(
-      filter(event => event.type == "MatchStart"),
-      map(() => null)
-    );
+  protected processGameEvent(event: GameEvent) {
+
+    switch (event.type) {
+      case "CardPlayed":
+
+        let cardEvent = <CardsInTrickEvent>event.event;
+        if (this.currentTrick == null) {
+          this.currentTrick = new Trick(cardEvent.player)
+        }
+        this.currentTrick.cards.push(cardEvent);
+        this.trickEmitter.next(this.currentTrick);
+
+        (<PlayerWithInfo>this.players[cardEvent.playerIndex]).cards--;
+        if (this.currentTrick.cards.length < 4) {
+          this.setTurnToPlay((cardEvent.playerIndex + 1) % this.players.length);
+        } else {
+          this.setTurnToPlay();
+        }
+        break;
+      case "TrickWon":
+        let trickWonEvent = <EventInfo>event.event;
+        this.currentTrick.winner = trickWonEvent.player;
+        (<PlayerWithInfo>this.players[trickWonEvent.playerIndex]).tricksWon++;
+        this.trickEmitter.next(this.currentTrick);
+        this.tricks++;
+        this.currentTrick = null;
+        if (this.tricks < 13) {
+          this.setTurnToPlay(trickWonEvent.playerIndex);
+        } else {
+          //no more turns until a new match
+          this.setTurnToPlay();
+        }
+        break;
+      case "Trumps":
+        //whoever chose trumps gets to play next
+        this.setTurnToPlay((<TrumpsEvent>event.event).playerIndex);
+        break;
+      case "MatchStart":
+        this.currentRoundEmitter.next(this.rounds);
+        this.roundInProgressEmittier.next(true);
+        break;
+      case "MatchFinished":
+
+        this.roundInProgressEmittier.next(false);
+        this.currentRoundEmitter.next(this.rounds);
+        this.rounds++;
+
+
+        break;
+    }
+    console.log("Event: " + event.type);
+    this.gameEventsOut$.next(event)
   }
+
+
 
   /**
    * Return current bid for players, or null at the start of a new round

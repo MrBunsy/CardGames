@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { IGame } from '../models/game';
+import { GameEvent, IGame } from '../models/game';
 import { LocalPresidentGame } from '../models/president';
 import { PresidentPlayer } from '../models/PresidentPlayer';
 import { GameService } from './game.service';
@@ -19,5 +19,15 @@ export class PresidentGameService extends GameService {
     this.players = players;
     this.game = new LocalPresidentGame(players);
 
+    this.subscribetoGame();
+
+  }
+
+  protected processGameEvent(event: GameEvent) {
+    //override this
+  }
+  protected isEventFromLocalPlayer(event: GameEvent): boolean {
+    //override this
+    return false;
   }
 }

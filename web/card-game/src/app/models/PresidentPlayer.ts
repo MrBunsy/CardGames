@@ -11,20 +11,6 @@ import { CardPlayer } from "./declaration-whist-player";
  */
 export class PresidentPlayer implements CardPlayer {
 
-    // /**
-    //  * Return what type of hand a set of cards is
-    //  * @param cards 
-    //  */
-    // static getTypeOfHand(cards: Card[]): "Single" | "Double" | "Triple" | "Quadruple" | "Poker"{
-    //     switch(cards.length){
-    //         case 
-    //     }
-    // }
-
-    // static getTypeOfPokerHand(cards: Card[]): "Straight" | "Flush" | "FullHouse" | "StraightFlush" {
-
-    // }
-
     public cards: Card[];
 
     constructor(public name: string) {
@@ -52,8 +38,9 @@ export class PresidentPlayer implements CardPlayer {
      * (otherwise anything after their last pass/play would not be known)
      * @param trick 
      */
-    public finishTrick(trick: Trick){
-
+    public finishTrick(trick: Trick) {
+        this.hasSkipped = false;
+        this.nextPosition = -1;
     }
 
     /**
@@ -96,13 +83,19 @@ export class PresidentPlayer implements CardPlayer {
  */
 export class MoronPresidentPlayer extends PresidentPlayer {
     public playOrPass(trickSoFar: Trick): Observable<Card[]> {
-        let topCards = trickSoFar.cards[trickSoFar.cards.length].cards;
+        if (trickSoFar.cards.length == 0) {
+            //we play first
+            let playCard = this.cards.splice(0, 1);
+           
+            return of([playCard[0]]);
+        }
+        let topCards = trickSoFar.cards[trickSoFar.cards.length-1].cards;
         switch (topCards.length) {
             case 1:
                 for (let card of this.cards) {
                     //play lowest card that's valid
                     if (card.cardValue() > topCards[0].cardValue()) {
-                        this.cards = this.cards.splice(this.cards.indexOf(card), 1);
+                        this.cards.splice(this.cards.indexOf(card), 1);
                         return of([card]);
                     }
                 }
@@ -115,7 +108,7 @@ export class MoronPresidentPlayer extends PresidentPlayer {
                 for (let set of sets) {
                     //play if highest in our set is higher than highest in their set
                     if (set[topCards.length - 1].cardValue() > Deck.sort(topCards)[topCards.length - 1].cardValue()) {
-                        this.cards = this.cards.splice(this.cards.indexOf(set[0], set.length));
+                        this.cards.splice(this.cards.indexOf(set[0], set.length));
                         return of(set);
                     }
                 }

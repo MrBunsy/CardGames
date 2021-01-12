@@ -105,6 +105,8 @@ export class LocalPresidentGame implements IGame {
         deck.deal(this.players);
         this.gameEvents.next(new PresidentGameEvent("RoundStart"));
 
+        this.startTrick(this.players[0]);
+
     }
     public type = Game.President;
 
@@ -119,6 +121,10 @@ export class LocalPresidentGame implements IGame {
         }
         let newTrick = new Trick(player);
         this.tricks.push(newTrick);
+        this.playersFinished = 0;
+        for (let player of this.players) {
+
+        }
 
         player.playOrPass(newTrick).pipe(first()).subscribe(cards => this.playCards(player, cards))
     }
@@ -132,10 +138,15 @@ export class LocalPresidentGame implements IGame {
         //TODO verify valid play
         let currentTrick = this.tricks[this.tricks.length - 1];
         let cardsInTick = new CardsInTrickEvent(cards, player, this.currentPlayOrder.indexOf(player));
-        currentTrick.cards.push();
+        currentTrick.cards.push(cardsInTick);
         let playerIndex = this.currentPlayOrder.indexOf(player);
 
         this.gameEvents.next(new PresidentGameEvent("CardsPlayed", cardsInTick));
+        let cardString = "";
+        for (let card of cards) {
+            cardString += card.toString();
+        }
+        console.log(`Player ${player.name} plays ${cardString}`);
 
         if (cards.length == 0) {
             player.hasSkipped = true;
@@ -159,7 +170,7 @@ export class LocalPresidentGame implements IGame {
                     if (this.verbose) {
                         console.log(testPlayer.name + "'s turn");
                     }
-                    testPlayer.playOrPass(currentTrick).pipe(first()).subscribe(cards => this.playCards(player, cards));
+                    testPlayer.playOrPass(currentTrick).pipe(first()).subscribe(cards => this.playCards(testPlayer, cards));
                     break;
                 }
             }
@@ -185,6 +196,12 @@ export class LocalPresidentGame implements IGame {
 
         if (stillInRound <= 1) {
             //round over!
+            for (let player of this.players) {
+                if (player.nextPosition < 0) {
+                    //this player still hard cards left, so wasn't assigned a position for next round yet - they'll be scum
+                    player.nextPosition = this.players.length - 1;
+                }
+            }
             this.endRound();
         } else {
             //find next player to play
@@ -198,8 +215,16 @@ export class LocalPresidentGame implements IGame {
                         let testPlayer = this.currentPlayOrder[(lastPlayerIndex + j) % this.currentPlayOrder.length];
                         if (testPlayer.cards.length > 0) {
                             //this player still has cards, they've got control
+                            if (this.verbose) {
+                                console.log(`${testPlayer.name} starts next trick`)
+                            }
+
+                            for (let player of this.players) {
+                                player.finishTrick(currentTrick);
+                            }
 
                             this.startTrick(testPlayer);
+                            return;
                         }
 
 
