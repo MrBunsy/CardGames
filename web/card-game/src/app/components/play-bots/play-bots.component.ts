@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { MoronDeclarationWhist, LocalHumanDeclarationWhist, DeclarationWhistPlayer } from 'src/app/models/declaration-whist-player';
-import { LocalDeclarationWhist, DeclarationWhistEvent } from 'src/app/models/declaration-whist';
-import { DeckService } from 'src/app/services/deck.service';
+import { DeclarationWhistEvent } from 'src/app/models/declaration-whist';
 import { Subscription, Observable } from 'rxjs';
 import { WhistGameService } from 'src/app/services/game.service';
 import { CleverBotDeclarationWhist } from 'src/app/models/clever-bot';

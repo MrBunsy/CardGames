@@ -43,7 +43,7 @@ export interface DeclarationWhistPlayer extends CardPlayer {
     /**
      * DEBUG ONLY
      */
-    cards: Card[]
+    // cards: Card[]
 }
 
 export class LocalHumanDeclarationWhist implements DeclarationWhistPlayer {

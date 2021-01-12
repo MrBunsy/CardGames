@@ -21,9 +21,9 @@ export class RemotePlayerHandComponent implements OnInit {
   constructor(private game: WhistGameService) { }
 
   ngOnInit() {
-    if (this.openHand) {
-      this.cards$ = this.game.getCardsFor(this.player);
-    } else {
+    // if (this.openHand) {
+    //   this.cards$ = this.game.getCardsFor(this.player);
+    // } else {
       this.cards$ = this.game.getCardCountFor(this.player).pipe(
         //replace with face-down cards
         map(count => {
@@ -35,6 +35,6 @@ export class RemotePlayerHandComponent implements OnInit {
         })
       );
     }
-  }
+  // }
 
 }

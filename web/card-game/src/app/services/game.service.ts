@@ -1,7 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
 import { CardPlayer, DeclarationWhistPlayer } from '../models/declaration-whist-player';
-import { LocalDeclarationWhist, TrumpsEvent, BidEvent, Trick, CardsInTrickEvent, EventInfo, ResultsEvent } from '../models/declaration-whist';
+import { LocalDeclarationWhist, TrumpsEvent, BidEvent, Trick, CardsInTrickEvent, EventInfo, ResultsEvent, DeclarationWhistEvent } from '../models/declaration-whist';
 import { Observable, Subscription, ReplaySubject, of, BehaviorSubject, merge } from 'rxjs';
 import { map, filter, delay, concatMap, combineLatest } from 'rxjs/operators';
 import { Card } from '../models/card';
@@ -9,8 +9,13 @@ import { PresidentPlayer } from '../models/PresidentPlayer';
 import { Game, GameEvent, IGame } from '../models/game';
 import { LocalPresidentGame } from '../models/president';
 
-class PlayerWithInfo {
+//used to be independant class, now making compatible with other CardPlayers so I don't need an equivilant over in president
+class PlayerWithInfo implements CardPlayer{
   constructor(public player: DeclarationWhistPlayer) { }
+  dealHand(cards: Card[]) {
+    throw new Error('Method not implemented.');
+  }
+  name: string;
   public cards: number = 13;
   public tricksWon: number = 0;
   public turnToPlay: boolean = false;
@@ -27,7 +32,7 @@ class PlayerWithInfo {
 })
 export class GameService implements OnDestroy {
   protected game: IGame;
-  protected players: PlayerWithInfo[];
+  protected players: CardPlayer[];
   protected subscriptions: Subscription[] = [];
 
   protected gameEventsOut$: ReplaySubject<GameEvent> = new ReplaySubject<GameEvent>(10);
@@ -98,10 +103,10 @@ export class WhistGameService extends GameService {
    */
   private setTurnToPlay(playerIndex: number = -1) {
     for (let i = 0; i < this.players.length; i++) {
-      this.players[i].turnToPlay = playerIndex == i;
+      (<PlayerWithInfo>this.players[i]).turnToPlay = playerIndex == i;
     }
 
-    this.currentTurnEmitter.next(playerIndex >= 0 ? this.players[playerIndex].player : null);
+    this.currentTurnEmitter.next(playerIndex >= 0 ? (<PlayerWithInfo>this.players[playerIndex]).player : null);
 
   }
 
@@ -117,7 +122,7 @@ export class WhistGameService extends GameService {
         this.currentTrick.cards.push(cardEvent);
         this.trickEmitter.next(this.currentTrick);
 
-        this.players[cardEvent.playerIndex].cards--;
+        (<PlayerWithInfo>this.players[cardEvent.playerIndex]).cards--;
         if (this.currentTrick.cards.length < 4) {
           this.setTurnToPlay((cardEvent.playerIndex + 1) % this.players.length);
         } else {
@@ -127,7 +132,7 @@ export class WhistGameService extends GameService {
       case "TrickWon":
         let trickWonEvent = <EventInfo>event.event;
         this.currentTrick.winner = trickWonEvent.player;
-        this.players[trickWonEvent.playerIndex].tricksWon++;
+        (<PlayerWithInfo>this.players[trickWonEvent.playerIndex]).tricksWon++;
         this.trickEmitter.next(this.currentTrick);
         this.tricks++;
         this.currentTrick = null;
@@ -223,7 +228,7 @@ export class WhistGameService extends GameService {
       return;
     }
     for (let player of this.players) {
-      player.nextRound();
+      (<PlayerWithInfo>player).nextRound();
     }
     this.tricks = 0;
 
@@ -233,7 +238,7 @@ export class WhistGameService extends GameService {
   private _getPlayerCardCounts(): number[] {
     let counts = [];
     for (let player of this.players) {
-      counts.push(player.cards);
+      counts.push((<PlayerWithInfo>player).cards);
     }
     return counts;
   }
@@ -266,24 +271,24 @@ export class WhistGameService extends GameService {
   public getCardCountFor(player: DeclarationWhistPlayer): Observable<number> {
     return this.getPlayerCardCounts().pipe(
       map(allCounts => {
-        let index = this.players.findIndex(test => test.player == player);
+        let index = this.players.findIndex(test => (<PlayerWithInfo>test).player == player);
         return allCounts[index];
       })
     )
   }
 
-  /**
-   * Will only work for a local player in debug
-   * @param player 
-   */
-  public getCardsFor(player: DeclarationWhistPlayer): Observable<Card[]> {
-    return this.getPlayerCardCounts().pipe(
-      map(() => {
-        let index = this.players.findIndex(test => test.player == player)
-        return this.players[index].player.cards.slice();
-      })
-    )
-  }
+  // /**
+  //  * Will only work for a local player in debug
+  //  * @param player 
+  //  */
+  // public getCardsFor(player: DeclarationWhistPlayer): Observable<Card[]> {
+  //   return this.getPlayerCardCounts().pipe(
+  //     map(() => {
+  //       let index = this.players.findIndex(test => test.player == player)
+  //       return this.players[index].player.cards.slice();
+  //     })
+  //   )
+  // }
 
   public getMatchStart(): Observable<void> {
     return this.getGameEvents().pipe(
@@ -313,7 +318,7 @@ export class WhistGameService extends GameService {
   private _getPlayerTrickCounts(): number[] {
     let counts = [];
     for (let player of this.players) {
-      counts.push(player.tricksWon);
+      counts.push((<PlayerWithInfo>player).tricksWon);
     }
     return counts;
   }
@@ -327,7 +332,7 @@ export class WhistGameService extends GameService {
       filter(event => event.type == "TrickWon" || event.type == "MatchStart"),
       map(() => this._getPlayerTrickCounts()),
       map(cardCounts => {
-        let index = this.players.findIndex(test => test.player == player);
+        let index = this.players.findIndex(test => (<PlayerWithInfo>test).player == player);
         return cardCounts[index];
       })
     )
