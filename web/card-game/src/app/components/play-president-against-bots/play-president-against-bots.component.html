@@ -1,4 +1,4 @@
-<president-table [players]="players"></president-table>
+<president-table></president-table>
 
 <div #logDiv class="log">
     <div *ngFor="let item of log">
@@ -7,7 +7,7 @@
       <ng-container *ngIf="item.type == 'Trumps'">Player {{item.event.player.name}} chose {{item.event.suit}} as trumps
       </ng-container>
       <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.event.player.name}} played
-        {{item.event.cards[0].toString()}}</ng-container>
+        {{item.event.cards.toString()}}</ng-container>
       <ng-container *ngIf="item.type == 'TrickWon'">Player {{item.event.player.name}} won the trick</ng-container>
       <ng-container *ngIf="item.type == 'MatchFinished'">Match Complete. Scores:
         <ng-container *ngFor="let player of item.event.players">

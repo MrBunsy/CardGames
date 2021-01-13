@@ -1,10 +1,12 @@
 <div class="table">
   <div class="tablefor-{{players.length}}">
-    <div *ngFor="let player of players" class="player-{{player.position}}">
-      <remote-player-hand-president *ngIf="!player.isLocal" [player]="player" [openHand]="openHand">
-      </remote-player-hand-president>
-      <local-player-hand *ngIf="player.isLocal"></local-player-hand>
-    </div>
+    <ng-container *ngIf="players$ | async as players">
+      <div *ngFor="let player of players" class="player-{{player.position}}">
+        <remote-player-hand-president *ngIf="!player.isLocal" [player]="player" [openHand]="openHand">
+        </remote-player-hand-president>
+        <local-player-hand *ngIf="player.isLocal"></local-player-hand>
+      </div>
+    </ng-container>
     <div class="trick-holder">
       <div class="tricks">
         <active-trick *ngIf="showTrick$ | async"></active-trick>

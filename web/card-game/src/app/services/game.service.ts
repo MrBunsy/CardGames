@@ -33,6 +33,7 @@ class PlayerWithInfo implements CardPlayer {
 export class GameService implements OnDestroy {
   protected game: IGame;
   protected players: CardPlayer[];
+  // protected players$: BehaviorSubject<CardPlayer[]> = new BehaviorSubject<CardPlayer[]>([]);
   protected subscriptions: Subscription[] = [];
 
   protected gameEventsOut$: ReplaySubject<GameEvent> = new ReplaySubject<GameEvent>(10);
@@ -50,6 +51,11 @@ export class GameService implements OnDestroy {
     //override this
     return false;
   }
+
+  // public getPlayers(): Observable<CardPlayer[]>{
+  //   // return this.players$.asObservable();
+  //   throw new Error("not implemented");
+  // }
 
   /**
    * Return true when it's the requested player's time to play a card, false otherwise
@@ -312,7 +318,7 @@ export class WhistGameService extends GameService {
         break;
     }
     console.log("Event: " + event.type);
-    this.gameEventsOut$.next(event)
+    this.gameEventsOut$.next(event);
   }
 
 

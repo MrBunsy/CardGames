@@ -7,7 +7,7 @@ import { CardPlayer } from "./declaration-whist-player";
 
 /**
  * Base class for all president players, but also holds player info
- * for tracking game state internally
+ * for tracking game state
  */
 export class PresidentPlayer implements CardPlayer {
 

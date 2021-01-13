@@ -86,7 +86,7 @@ export class LocalPresidentGame implements IGame {
         //     filter(event => event.type=="RoundEnd")
         // ).subscribe(event => this.nextRound())
 
-        setInterval(() => { this.nextRound() }, 100)
+        // setInterval(() => { this.nextRound() }, 100)
     }
 
     getGameEvents(): Observable<GameEvent> {

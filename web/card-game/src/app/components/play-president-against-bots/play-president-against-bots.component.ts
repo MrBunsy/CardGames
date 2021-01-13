@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { PresidentGameEvent } from 'src/app/models/president';
 import { MoronPresidentPlayer, PresidentPlayer } from 'src/app/models/PresidentPlayer';
-import { WhistGameService } from 'src/app/services/game.service';
 import { HumanPlayerService } from 'src/app/services/human-player.service';
 import { PresidentGameService } from 'src/app/services/president-game.service';
 
