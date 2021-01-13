@@ -110,6 +110,14 @@ export class Deck {
         return pairs;
     }
 
+    // public static cardsToString(cards: Card[]): string {
+    //     let cardString = "";
+    //     for (let card of cards) {
+    //         cardString += cards.toString() + ",";
+    //     }
+    //     return cardString;
+    // }
+
 
     public static getSuitCount(cards: Card[]): Map<Suit, number> {
         let count = new Map<Suit, number>();

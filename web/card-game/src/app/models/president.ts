@@ -1,5 +1,5 @@
-import { Observable, ReplaySubject } from "rxjs";
-import { first } from "rxjs/operators";
+import { forkJoin, Observable, ReplaySubject } from "rxjs";
+import { filter, first } from "rxjs/operators";
 import { Card } from "./card";
 import { Deck } from "./deck";
 import { Trick, CardsInTrickEvent } from "./declaration-whist";
@@ -50,6 +50,7 @@ export class LocalPresidentGame implements IGame {
     private gameEvents: ReplaySubject<PresidentGameEvent> = new ReplaySubject<PresidentGameEvent>(10);
     private currentPlayOrder: PresidentPlayer[] = [];
     private tricks: Trick[];
+    private rounds: number = 0;
     private playersFinished: number;
 
     constructor(public players: PresidentPlayer[], private verbose = true) {
@@ -79,6 +80,13 @@ export class LocalPresidentGame implements IGame {
 
         // console.log(PresidentPlayer.isMyHandBetter(fullHouse, flush));
         // console.log(PresidentPlayer.isMyHandBetter(straight, flush));
+
+        //hacky, don't keep
+        // this.gameEvents.asObservable().pipe(
+        //     filter(event => event.type=="RoundEnd")
+        // ).subscribe(event => this.nextRound())
+
+        setInterval(() => { this.nextRound() }, 100)
     }
 
     getGameEvents(): Observable<GameEvent> {
@@ -163,6 +171,7 @@ export class LocalPresidentGame implements IGame {
             //trick over!
             this.endTrick();
         } else {
+            let nextPlayer: PresidentPlayer = null;
             for (let j = 1; j < this.currentPlayOrder.length; j++) {
                 let testPlayer = this.currentPlayOrder[(playerIndex + j) % this.currentPlayOrder.length];
                 if (testPlayer.cards.length > 0 && !testPlayer.hasSkipped) {
@@ -170,9 +179,12 @@ export class LocalPresidentGame implements IGame {
                     if (this.verbose) {
                         console.log(testPlayer.name + "'s turn");
                     }
-                    testPlayer.playOrPass(currentTrick).pipe(first()).subscribe(cards => this.playCards(testPlayer, cards));
+                    nextPlayer = testPlayer;
                     break;
                 }
+            }
+            if (nextPlayer != null) {
+                nextPlayer.playOrPass(currentTrick).pipe(first()).subscribe(cards => this.playCards(nextPlayer, cards));
             }
         }
 
@@ -218,7 +230,7 @@ export class LocalPresidentGame implements IGame {
                             if (this.verbose) {
                                 console.log(`${testPlayer.name} starts next trick`)
                             }
-
+                            currentTrick.winner = testPlayer;
                             for (let player of this.players) {
                                 player.finishTrick(currentTrick);
                             }
@@ -236,11 +248,60 @@ export class LocalPresidentGame implements IGame {
     }
 
     private endRound() {
+        this.rounds++;
         //work out who's in what seat for the next round!
         console.log("round ended")
         for (let player of this.currentPlayOrder) {
             console.log(`${player.name} finished in position ${player.nextPosition}`);
         }
+        // this.nextRound();
+        this.gameEvents.next(new PresidentGameEvent("RoundEnd"));
+    }
+
+    public nextRound() {
+        this.tricks = [];
+
+        for (let player of this.players) {
+            player.currentPosition = player.nextPosition;
+            this.currentPlayOrder[player.currentPosition] = player;
+            player.nextPosition = -1;
+            player.startRound(this.players);
+        }
+        this.playersFinished = 0;
+
+        let deck = new Deck(true, false, this.currentPlayOrder.length);
+        deck.deal(this.players);
+        this.gameEvents.next(new PresidentGameEvent("SwapCards"));
+
+        let pres = this.currentPlayOrder[0];
+        let vp = this.currentPlayOrder[1];
+        let vs = this.currentPlayOrder[this.currentPlayOrder.length - 2];
+        let scum = this.currentPlayOrder[this.currentPlayOrder.length - 1];
+
+        forkJoin([
+            //pres
+            this.currentPlayOrder[0].giveAwayCards(2, true),
+            //VP
+            this.currentPlayOrder[1].giveAwayCards(1, true),
+            //VS
+            this.currentPlayOrder[this.currentPlayOrder.length - 2].giveAwayCards(1, false),
+            //scum
+            this.currentPlayOrder[this.currentPlayOrder.length - 1].giveAwayCards(2, false),
+        ]).pipe(first()).subscribe(
+            ([presCards, vpCards, vsCards, scumCards]) => {
+                if (this.verbose) {
+                    console.log(`President ${pres.name} gives away ${presCards.toString()}`);
+                    console.log(`VP ${vp.name} gives away ${vpCards.toString()}`);
+                    console.log(`VS ${vs.name} gives away ${vsCards.toString()}`);
+                    console.log(`Scum ${scum.name} gives away ${scumCards.toString()}`);
+                }
+                pres.giveCards(scumCards);
+                vp.giveCards(vsCards);
+                vs.giveCards(vpCards);
+                scum.giveCards(presCards);
+                this.startTrick(pres);
+            }
+        )
     }
 
 }

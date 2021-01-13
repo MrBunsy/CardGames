@@ -52,6 +52,25 @@ export class PresidentPlayer implements CardPlayer {
         throw new Error("Method not implemented.");
     }
 
+    /**
+     * Return the cards to be swapped. 
+     * President - two cards of their choosing
+     * vice pres - one card of their choosing#
+     * vice scum - best card
+     * scum - two best cards
+     * @param count 
+     * @param voluntary 
+     */
+    public giveAwayCards(count: number, canChoose: boolean): Observable<Card[]> {
+        //must be implemented by concrete implementation
+        throw new Error("Method not implemented.");
+    }
+
+    public giveCards(cards: Card[]) {
+        this.cards.push(...cards);
+        this.cards = Deck.sort(this.cards, false);
+    }
+
     public static isMyHandBetter(myHand: Card[], theirHand: Card[]): boolean {
         if (myHand.length != theirHand.length) {
             //not a valid play anyway
@@ -86,10 +105,10 @@ export class MoronPresidentPlayer extends PresidentPlayer {
         if (trickSoFar.cards.length == 0) {
             //we play first
             let playCard = this.cards.splice(0, 1);
-           
+
             return of([playCard[0]]);
         }
-        let topCards = trickSoFar.cards[trickSoFar.cards.length-1].cards;
+        let topCards = trickSoFar.cards[trickSoFar.cards.length - 1].cards;
         switch (topCards.length) {
             case 1:
                 for (let card of this.cards) {
@@ -107,7 +126,7 @@ export class MoronPresidentPlayer extends PresidentPlayer {
                 let sets: Card[][] = Deck.getDuplicates(this.cards, topCards.length);
                 for (let set of sets) {
                     //play if highest in our set is higher than highest in their set
-                    if (set[topCards.length - 1].cardValue() > Deck.sort(topCards)[topCards.length - 1].cardValue()) {
+                    if (set[topCards.length - 1].cardValue() > Deck.sort(topCards)[topCards.length - 1].cardValue(), false) {
                         this.cards.splice(this.cards.indexOf(set[0], set.length));
                         return of(set);
                     }
@@ -125,7 +144,17 @@ export class MoronPresidentPlayer extends PresidentPlayer {
     }
     dealHand(cards: Card[]) {
         super.dealHand(cards);
-        this.cards = Deck.sort(this.cards);
+        this.cards = Deck.sort(this.cards, false);
+    }
+
+    public giveAwayCards(count: number, canChoose: boolean): Observable<Card[]> {
+        if (canChoose) {
+            //choose lowest
+            return of(this.cards.splice(0, count));
+        } else {
+            //MUST choose highest.
+            return of(this.cards.splice(this.cards.length - count, count));
+        }
     }
 
 }
