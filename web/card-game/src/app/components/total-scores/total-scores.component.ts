@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { WhistGameService } from 'src/app/services/game.service';
 import { Observable } from 'rxjs';
-import { ResultsEvent } from 'src/app/models/declaration-whist';
+import { ResultsEventInfo } from 'src/app/models/declaration-whist';
 
 @Component({
   selector: 'total-scores',
@@ -11,7 +11,7 @@ import { ResultsEvent } from 'src/app/models/declaration-whist';
 export class TotalScoresComponent implements OnInit {
 
   public round$: Observable<number>;
-  public scores$: Observable<ResultsEvent>;
+  public scores$: Observable<ResultsEventInfo>;
 
   constructor(private game: WhistGameService) {
     this.round$ = this.game.getCurrentRound();

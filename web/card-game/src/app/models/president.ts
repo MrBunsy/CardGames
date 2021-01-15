@@ -2,8 +2,7 @@ import { forkJoin, Observable, ReplaySubject } from "rxjs";
 import { filter, first } from "rxjs/operators";
 import { Card } from "./card";
 import { Deck } from "./deck";
-import { Trick, CardsInTrickEvent } from "./declaration-whist";
-import { Game, GameEvent, IGame } from "./game";
+import { CardsInTrickEventInfo, EventInfo, Game, GameEvent, IGame, Trick } from "./game";
 import { PresidentPlayer } from "./PresidentPlayer";
 
 
@@ -13,28 +12,24 @@ import { PresidentPlayer } from "./PresidentPlayer";
 
 export class PresidentGameEvent extends GameEvent {
     constructor(public type: string,
-        public event: any = null) {
-        super(type, event, Game.President);
+        public eventInfo: any = null) {
+        super(type, eventInfo, Game.President);
     }
 }
 
-// export class PresidentEventInfo {
-//     public player: PresidentPlayer;
-//     //current position in this round
-//     public playerIndex: number;
-// }
+export class PresidentRoundEndEventInfo {
+    /**
+     * Array of position of current players
+     * so [currentPosition] = nextPosition
+     * @param nextPositions 
+     */
+    constructor(public nextPositions: number[]) {
 
-// export class CardsInTrickEvent extends PresidentEventInfo {
-//     constructor(public cards: Card[], public player: PresidentPlayer, public playerIndex) {
-//         super();
-//     }
+    }
+}
 
-// }
+// export class PresidentTrickStart extends EventInfo{
 
-// export class PresidentTrick {
-//     constructor(public openedBy: PresidentPlayer) { }
-//     public cards: CardsInTrickEvent[] = [];
-//     public winner: PresidentPlayer = null;
 // }
 
 /**
@@ -111,7 +106,7 @@ export class LocalPresidentGame implements IGame {
 
         let deck = new Deck(true, false, this.currentPlayOrder.length);
         deck.deal(this.players);
-        this.gameEvents.next(new PresidentGameEvent("RoundStart"));
+        this.gameEvents.next(new PresidentGameEvent("RoundStart"),);
 
         this.startTrick(this.players[0]);
 
@@ -133,7 +128,10 @@ export class LocalPresidentGame implements IGame {
         for (let player of this.players) {
 
         }
-
+        let event = new EventInfo();
+        event.player = player;
+        event.playerIndex = this.currentPlayOrder.indexOf(player);
+        this.gameEvents.next(new PresidentGameEvent("StartTrick", event));
         player.playOrPass(newTrick).pipe(first()).subscribe(cards => this.playCards(player, cards))
     }
 
@@ -144,10 +142,10 @@ export class LocalPresidentGame implements IGame {
      */
     private playCards(player: PresidentPlayer, cards: Card[] = []) {
         //TODO verify valid play
-        let currentTrick = this.tricks[this.tricks.length - 1];
-        let cardsInTick = new CardsInTrickEvent(cards, player, this.currentPlayOrder.indexOf(player));
-        currentTrick.cards.push(cardsInTick);
         let playerIndex = this.currentPlayOrder.indexOf(player);
+        let currentTrick = this.tricks[this.tricks.length - 1];
+        let cardsInTick = new CardsInTrickEventInfo(cards, player, playerIndex);
+        currentTrick.cards.push(cardsInTick);
 
         this.gameEvents.next(new PresidentGameEvent("CardsPlayed", cardsInTick));
         let cardString = "";
@@ -251,11 +249,13 @@ export class LocalPresidentGame implements IGame {
         this.rounds++;
         //work out who's in what seat for the next round!
         console.log("round ended")
+        let newPlayOrder = []
         for (let player of this.currentPlayOrder) {
             console.log(`${player.name} finished in position ${player.nextPosition}`);
+            newPlayOrder.push(player.nextPosition);
         }
         // this.nextRound();
-        this.gameEvents.next(new PresidentGameEvent("RoundEnd"));
+        this.gameEvents.next(new PresidentGameEvent("RoundEnd", new PresidentRoundEndEventInfo(newPlayOrder)));
     }
 
     public nextRound() {
@@ -299,6 +299,7 @@ export class LocalPresidentGame implements IGame {
                 vp.giveCards(vsCards);
                 vs.giveCards(vpCards);
                 scum.giveCards(presCards);
+                this.gameEvents.next(new PresidentGameEvent("CardsSwapped"));
                 this.startTrick(pres);
             }
         )

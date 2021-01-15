@@ -1,8 +1,9 @@
 import { DeclarationWhistPlayer } from './declaration-whist-player';
 import { Card, Suit, suitArray } from './card';
 import { ReplaySubject, Observable, of } from 'rxjs';
-import { TrumpsEvent, BidEvent, CardsInTrickEvent, Trick } from './declaration-whist';
+import { TrumpsEventInfo, BidEventInfo } from './declaration-whist';
 import { Deck } from './deck';
+import { CardsInTrickEventInfo, Trick } from './game';
 
 //three different versions of this now... oops
 class PlayerInfo {
@@ -39,7 +40,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
     public cards: Card[];
     private startingCards: Card[];
     //what are trumps, and who chose them?
-    private trumps: TrumpsEvent;
+    private trumps: TrumpsEventInfo;
     //track what other players have played
     // private otherPlayersPlayed: Map<DeclarationWhistPlayer, Card[]>;
     private allPlayers: PlayerInfo[];
@@ -79,7 +80,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
 
     }
 
-    public trumpsChosen(trumps: TrumpsEvent) {
+    public trumpsChosen(trumps: TrumpsEventInfo) {
         this.trumps = trumps;
         this.allPlayers[trumps.playerIndex].choseTrumps = true;
     }
@@ -87,7 +88,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
     /**
      * in ideal circumstances, how many tricks do we think we can win?
      */
-    private preferedBid(otherBids: BidEvent[]): number {
+    private preferedBid(otherBids: BidEventInfo[]): number {
         /**
          * Inputs: other bids, our cards
          * Considerations: trumps, starting first
@@ -117,7 +118,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
     /**
      * Get our estimated number of tricks
      */
-    public declareBid(otherBids: BidEvent[]): Observable<number> {
+    public declareBid(otherBids: BidEventInfo[]): Observable<number> {
 
         let wantBid = this.preferedBid(otherBids);
 
@@ -142,7 +143,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
     /**
      * This player's estimate was highest, they get to choose trumps
      */
-    public chooseTrumps(otherBids: BidEvent[]): Observable<Suit> {
+    public chooseTrumps(otherBids: BidEventInfo[]): Observable<Suit> {
         for (let bid of otherBids) {
             this.allPlayers[bid.playerIndex].bid = bid.bid;
         }
@@ -177,7 +178,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Get teh suit we should be following for a trick. Doesn't take into accoutn anyone trumping it
      * @param trick 
      */
-    private getLeadingSuitFromTrick(trick: CardsInTrickEvent[]): Suit {
+    private getLeadingSuitFromTrick(trick: CardsInTrickEventInfo[]): Suit {
         if (trick.length > 0) {
             return trick[0].cards[0].suit;
         }
@@ -189,7 +190,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Returns true if trick was lead in trumps, or has been trumped
      * @param trick 
      */
-    private hasTrickBeenTrumped(trick: CardsInTrickEvent[]): boolean {
+    private hasTrickBeenTrumped(trick: CardsInTrickEventInfo[]): boolean {
 
         for (let cardInTrick of trick) {
             if (cardInTrick.cards[0].suit == this.trumps.suit) {
@@ -204,7 +205,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Best guess at winning by playing a specific card
      * @param card 
      */
-    private probablityToWinTrick(trick: CardsInTrickEvent[], card: Card): number {
+    private probablityToWinTrick(trick: CardsInTrickEventInfo[], card: Card): number {
         if (!this.possibleToWinTrick(trick.map(trick => trick.cards[0]), card)) {
             return 0;
         }
@@ -397,7 +398,7 @@ export class CleverBotDeclarationWhist implements DeclarationWhistPlayer {
      * Get our card for a trick
      * @param trick array of tupes of who (player index) played what
      */
-    public playCard(trick: CardsInTrickEvent[], previousTrick: Trick): Observable<Card> {
+    public playCard(trick: CardsInTrickEventInfo[], previousTrick: Trick): Observable<Card> {
 
         this.processPreviousTrick(previousTrick);
 

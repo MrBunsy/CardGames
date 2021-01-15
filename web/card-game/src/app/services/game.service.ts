@@ -1,12 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { DeckService } from './deck.service';
 import { CardPlayer, DeclarationWhistPlayer } from '../models/declaration-whist-player';
-import { LocalDeclarationWhist, TrumpsEvent, BidEvent, Trick, CardsInTrickEvent, EventInfo, ResultsEvent, DeclarationWhistEvent } from '../models/declaration-whist';
+import { LocalDeclarationWhist, TrumpsEventInfo, BidEventInfo, ResultsEventInfo, DeclarationWhistEvent } from '../models/declaration-whist';
 import { Observable, Subscription, ReplaySubject, of, BehaviorSubject, merge } from 'rxjs';
 import { map, filter, delay, concatMap, combineLatest } from 'rxjs/operators';
 import { Card } from '../models/card';
 import { PresidentPlayer } from '../models/PresidentPlayer';
-import { Game, GameEvent, IGame } from '../models/game';
+import { CardsInTrickEventInfo, EventInfo, Game, GameEvent, IGame, Trick } from '../models/game';
 import { LocalPresidentGame } from '../models/president';
 
 //used to be independant class, now making compatible with other CardPlayers so I don't need an equivilant over in president
@@ -38,10 +38,11 @@ export class GameService implements OnDestroy {
 
   protected gameEventsOut$: ReplaySubject<GameEvent> = new ReplaySubject<GameEvent>(10);
 
-  protected currentTurnEmitter: ReplaySubject<DeclarationWhistPlayer> = new ReplaySubject<DeclarationWhistPlayer>(1);
+  protected currentTurnEmitter: ReplaySubject<CardPlayer> = new ReplaySubject<CardPlayer>(1);
   protected currentRoundEmitter: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   protected roundInProgressEmittier: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   protected eventInterval: number = 1000;
+  protected rounds: number = 0;
 
 
   protected processGameEvent(event: GameEvent) {
@@ -134,7 +135,6 @@ export class WhistGameService extends GameService {
   private tricks: number = 0;
   private currentTrick: Trick = null;
   private localPlayerIndex: number;
-  private rounds: number = 0;
 
 
   constructor() {
@@ -168,7 +168,7 @@ export class WhistGameService extends GameService {
     switch (event.game) {
       case Game.DeclarationWhist:
         if (event.type == "Bid" || event.type == "CardPlayed" || event.type == "Trumps") {//deliberately exclude TrickWon, since this didn't directly originate from player action
-          return (<EventInfo>event.event).playerIndex == this.localPlayerIndex;
+          return (<EventInfo>event.eventInfo).playerIndex == this.localPlayerIndex;
         }
         break;
     }
@@ -231,12 +231,12 @@ export class WhistGameService extends GameService {
   /**
    * returns null at start of a new round, then a TrumpsEvent when trumps chosen
    */
-  public getTrumpsEvent(): Observable<TrumpsEvent> {
+  public getTrumpsEvent(): Observable<TrumpsEventInfo> {
     let trumps = this.getGameEvents().pipe(
       filter(event => event.type == "Trumps"),
-      map(trumpEvent => trumpEvent.event),
+      map(trumpEvent => trumpEvent.eventInfo),
       //extra step seems to shut the linter up
-      map((trumpEvent: TrumpsEvent) => trumpEvent),
+      map((trumpEvent: TrumpsEventInfo) => trumpEvent),
     )
 
     let start = this.getMatchStart().pipe(
@@ -272,7 +272,7 @@ export class WhistGameService extends GameService {
     switch (event.type) {
       case "CardPlayed":
 
-        let cardEvent = <CardsInTrickEvent>event.event;
+        let cardEvent = <CardsInTrickEventInfo>event.eventInfo;
         if (this.currentTrick == null) {
           this.currentTrick = new Trick(cardEvent.player)
         }
@@ -287,7 +287,7 @@ export class WhistGameService extends GameService {
         }
         break;
       case "TrickWon":
-        let trickWonEvent = <EventInfo>event.event;
+        let trickWonEvent = <EventInfo>event.eventInfo;
         this.currentTrick.winner = trickWonEvent.player;
         (<PlayerWithInfo>this.players[trickWonEvent.playerIndex]).tricksWon++;
         this.trickEmitter.next(this.currentTrick);
@@ -302,7 +302,7 @@ export class WhistGameService extends GameService {
         break;
       case "Trumps":
         //whoever chose trumps gets to play next
-        this.setTurnToPlay((<TrumpsEvent>event.event).playerIndex);
+        this.setTurnToPlay((<TrumpsEventInfo>event.eventInfo).playerIndex);
         break;
       case "MatchStart":
         this.currentRoundEmitter.next(this.rounds);
@@ -329,8 +329,8 @@ export class WhistGameService extends GameService {
   public getBidsFor(player: DeclarationWhistPlayer): Observable<number> {
     let bids = this.getGameEvents().pipe(
       filter(event => event.type == "Bid"),
-      map(event => event.event),
-      filter((event: BidEvent) => event.player == player),
+      map(event => event.eventInfo),
+      filter((event: BidEventInfo) => event.player == player),
       map(event => event.bid)
     );
 
@@ -386,10 +386,10 @@ export class WhistGameService extends GameService {
     return this.roundInProgressEmittier.asObservable();
   }
 
-  public getCurrentScores(): Observable<ResultsEvent> {
+  public getCurrentScores(): Observable<ResultsEventInfo> {
     return this.getGameEvents().pipe(
       filter(event => event.type == "MatchFinished"),
-      map(event => <ResultsEvent>event.event)
+      map(event => <ResultsEventInfo>event.eventInfo)
     )
   }
   protected tidyUpGame() {

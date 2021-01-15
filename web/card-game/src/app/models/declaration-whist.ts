@@ -3,7 +3,7 @@ import { Deck } from './deck';
 import { first } from 'rxjs/operators';
 import { ReplaySubject, Observable } from 'rxjs';
 import { Suit, Card } from './card';
-import { Game, GameEvent, IGame } from './game';
+import { CardsInTrickEventInfo, EventInfo, Game, GameEvent, IGame, Trick } from './game';
 
 //long term plan to make this suitable for multiple games. for now, just write for declaration whist and tease apart later
 //this is a stand in for the remote server
@@ -20,31 +20,22 @@ import { Game, GameEvent, IGame } from './game';
  * One DeclarationWhistGame object per match
  */
 
-export class EventInfo {
-    public player: CardPlayer;
-    public playerIndex: number;
-}
 
-export class BidEvent extends EventInfo {
+
+export class BidEventInfo extends EventInfo {
     public bid: number;
 }
 
-export class CardsInTrickEvent extends EventInfo {
-    // public card: Card[];
-    //whist only ever has one card per player per trick, but other games can have more
-    constructor(public cards: Card[], public player: CardPlayer, public playerIndex) {
-        super();
-    }
-}
-export class TrumpsEvent extends EventInfo {
+
+export class TrumpsEventInfo extends EventInfo {
     public suit: Suit;
 }
 
-export class TrickWonEvent extends EventInfo {
+export class TrickWonEventInfo extends EventInfo {
     //player in event info was the winner
 }
 
-export class ResultsEvent {
+export class ResultsEventInfo {
     public players: PlayerScores[];
 }
 
@@ -67,11 +58,7 @@ class PlayerInfo extends PlayerScores {
     }
 }
 
-export class Trick {
-    constructor(public openedBy: CardPlayer) { }
-    public cards: CardsInTrickEvent[] = [];
-    public winner: CardPlayer = null;
-}
+
 
 
 
@@ -87,9 +74,9 @@ export enum DeclarationWhistGameEventsType {
 export class DeclarationWhistEvent extends GameEvent {
     //turns out enums are a PITA in TS/angular
     constructor(public type: "MatchStart" | "Bid" | "Trumps" | "CardPlayed" | "TrickWon" | "MatchFinished",
-        public event: BidEvent | TrumpsEvent | CardsInTrickEvent | EventInfo | ResultsEvent = null,
+        public eventInfo: BidEventInfo | TrumpsEventInfo | CardsInTrickEventInfo | EventInfo | ResultsEventInfo = null,
     ) {
-        super(type, event, Game.DeclarationWhist);
+        super(type, eventInfo, Game.DeclarationWhist);
     }
 }
 
@@ -98,7 +85,7 @@ export class LocalDeclarationWhist implements IGame {
     public type = Game.DeclarationWhist;
 
     private playerInfos: PlayerInfo[] = [];
-    private bids: BidEvent[] = [];
+    private bids: BidEventInfo[] = [];
     private tricks: Trick[] = [];
     private trumps: Suit;
 
@@ -141,7 +128,7 @@ export class LocalDeclarationWhist implements IGame {
 
     }
 
-    private playerBid(bid: BidEvent) {
+    private playerBid(bid: BidEventInfo) {
         if (this.verbose) {
             console.log("Player " + bid.playerIndex + " (" + bid.player.name + ") bid " + bid.bid);
         }
@@ -182,7 +169,7 @@ export class LocalDeclarationWhist implements IGame {
             console.log("Trumps are " + suit + ". Chosen by " + player.name);
         }
 
-        let trumpsEvent: TrumpsEvent = { player: player, playerIndex: this.players.lastIndexOf(player), suit: suit };
+        let trumpsEvent: TrumpsEventInfo = { player: player, playerIndex: this.players.lastIndexOf(player), suit: suit };
 
         for (let player of this.players) {
             player.trumpsChosen(trumpsEvent);
@@ -211,7 +198,7 @@ export class LocalDeclarationWhist implements IGame {
      * player is playing a card on a trick.
      * @param card 
      */
-    private playCard(card: CardsInTrickEvent) {
+    private playCard(card: CardsInTrickEventInfo) {
         if (this.verbose) {
             console.log(card.player.name + " played " + card.cards.toString());
         }
@@ -261,9 +248,9 @@ export class LocalDeclarationWhist implements IGame {
         let currentTrick = this.tricks[this.tricks.length - 1];
 
 
-        let highestInSuit: CardsInTrickEvent = currentTrick.cards[0];
+        let highestInSuit: CardsInTrickEventInfo = currentTrick.cards[0];
         let suit = highestInSuit.cards[0].suit;
-        let highestTrump: CardsInTrickEvent = null
+        let highestTrump: CardsInTrickEventInfo = null
 
 
         //find highest card of the suit and/or highest trump

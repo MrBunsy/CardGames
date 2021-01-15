@@ -1,8 +1,8 @@
 import { Observable, of } from "rxjs";
 import { Card } from "./card";
 import { Deck } from "./deck";
-import { Trick } from "./declaration-whist";
 import { CardPlayer } from "./declaration-whist-player";
+import { Trick } from "./game";
 
 
 /**
@@ -20,6 +20,8 @@ export class PresidentPlayer implements CardPlayer {
     public hasSkipped: boolean;
     public currentPosition: number;
     public nextPosition: number;
+    public tracksPlayer: PresidentPlayer;
+    public isLocal: boolean;
 
     public dealHand(cards: Card[]) {
         this.cards = cards;
