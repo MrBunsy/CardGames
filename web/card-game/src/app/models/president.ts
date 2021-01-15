@@ -190,6 +190,9 @@ export class LocalPresidentGame implements IGame {
     }
 
     private endTrick() {
+
+        this.gameEvents.next(new PresidentGameEvent("EndTrick"));
+
         let currentTrick = this.tricks[this.tricks.length - 1];
 
 

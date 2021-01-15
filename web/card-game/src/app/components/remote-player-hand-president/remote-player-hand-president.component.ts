@@ -18,6 +18,7 @@ export class RemotePlayerHandPresidentComponent implements OnChanges {//, OnDest
   @Input() openHand: boolean;
 
   public cards$: Observable<Card[]>;
+  public passed$: Observable<boolean>;
 
   constructor(private game: PresidentGameService) {
 
@@ -25,16 +26,17 @@ export class RemotePlayerHandPresidentComponent implements OnChanges {//, OnDest
 
   ngOnChanges(changes: SimpleChanges) {
     //seems like I need the array to be a whole new array to get the change detection of the cards component to work. fine. meh.
-    this.cards$ = this.game.getPlayers().pipe(
+    this.cards$ = this.game.getCardsForPlayer(this.player.name);
+    this.passed$ = this.game.getPlayers().pipe(
       map(players => {
-        for(let player of players){
-          if (player == this.player){
-            return [...player.cards];
+        for (let player of players) {
+          if (player.name == this.player.name) {
+            return player.hasSkipped;
           }
         }
-        return this.player.cards;
+        return false;
       })
-    );
+    )
 
   }
 

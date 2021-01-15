@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { filter, map } from 'rxjs/operators';
+import { Card } from '../models/card';
 import { Deck } from '../models/deck';
-import { CardsInTrickEventInfo, EventInfo, GameEvent, IGame } from '../models/game';
+import { CardsInTrickEventInfo, EventInfo, GameEvent, IGame, Trick } from '../models/game';
 import { LocalPresidentGame, PresidentRoundEndEventInfo } from '../models/president';
 import { PresidentPlayer } from '../models/PresidentPlayer';
 import { GameService } from './game.service';
@@ -15,6 +16,7 @@ export class PresidentGameService extends GameService {
   // private players: PresidentPlayer[];
   // private playerStateChanged: Subject<boolean> = new Subject<boolean>();
   private currentPlayOrder: PresidentPlayer[] = [];
+  private trick: Trick;
 
   private cardSwapInProgress: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 
@@ -22,7 +24,7 @@ export class PresidentGameService extends GameService {
     super();
   }
 
-  public createPresident(players: PresidentPlayer[], eventInterval: number = 100, localPlayer: PresidentPlayer = null, verbose: boolean = false) {
+  public createPresident(players: PresidentPlayer[], eventInterval: number = 1000, localPlayer: PresidentPlayer = null, verbose: boolean = false) {
     // this.tidyUpGame();
     this.currentPlayOrder = [];
     this.players = [];
@@ -40,6 +42,7 @@ export class PresidentGameService extends GameService {
       this.players.push(playerTracker);
       this.currentPlayOrder.push(playerTracker);
       playerTracker.isLocal = false;
+      playerTracker.hasSkipped = false;
     }
 
     //deal out fake cards, these will only be shown face down
@@ -65,6 +68,27 @@ export class PresidentGameService extends GameService {
     return this.gameEventsOut$.asObservable().pipe(map(() => this.currentPlayOrder as PresidentPlayer[]));
   }
 
+  public getCardsForPlayer(name: string):Observable<Card[]>{
+    return this.gameEventsOut$.asObservable().pipe(
+      map(() => {
+        for(let player of this.currentPlayOrder){
+          if(player.name == name){
+            console.log(`${player.name} has ${player.cards.length} cards`)
+            return Array.from(player.cards);
+          }
+        }
+        return [];
+      })
+    )
+  }
+
+  public getTrick(): Observable<Trick> {
+    return this.gameEventsOut$.asObservable().pipe(
+      map(() => this.trick),
+      filter(trick => trick != undefined)
+    );
+  }
+
   protected processGameEvent(event: GameEvent) {
     console.log(event.type);
     switch (event.type) {
@@ -85,16 +109,18 @@ export class PresidentGameService extends GameService {
         break;
       case "CardsPlayed":
         {
-          let trick = event.eventInfo as CardsInTrickEventInfo;
-          if (trick.cards && trick.cards.length == 0) {
+          let cardsPlayed = event.eventInfo as CardsInTrickEventInfo;
+          if (cardsPlayed.cards && cardsPlayed.cards.length == 0) {
             //this player passed
-            this.currentPlayOrder[trick.playerIndex].hasSkipped = true;
+            this.currentPlayOrder[cardsPlayed.playerIndex].hasSkipped = true;
           } else {
             //remove some cards from this player
             //not bothering to track which because in remote implementation we won't know anyway
-            console.log(`player index: ${trick.playerIndex}`)
-            this.currentPlayOrder[trick.playerIndex].cards.splice(0, trick.cards.length)
+            console.log(`player index: ${cardsPlayed.playerIndex} (${this.currentPlayOrder[cardsPlayed.playerIndex].name} played ${cardsPlayed.cards})`)
+            this.currentPlayOrder[cardsPlayed.playerIndex].cards.splice(0, cardsPlayed.cards.length)
+            console.log(`cards left: ${this.currentPlayOrder[cardsPlayed.playerIndex].cards.length}`);
           }
+          this.trick.cards.push(cardsPlayed);
         }
         break;
       case "SwapCards":
@@ -106,11 +132,20 @@ export class PresidentGameService extends GameService {
         this.cardSwapInProgress.next(false);
         break;
       case "StartTrick": {
+
         let start = event.eventInfo as EventInfo;
         //emit player or our representation of player?
         //TODO once real server is working
         this.currentTurnEmitter.next(start.player)
+
+        this.trick = new Trick(start.player);
+        for (let player of this.currentPlayOrder) {
+          player.hasSkipped = false;
+        }
       }
+        break;
+      case "EndTrick":
+
         break;
     }
 

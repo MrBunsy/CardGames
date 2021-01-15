@@ -1,0 +1,7 @@
+<hand [cards]="topCards$ | async" [sortGroupSuits] = "false"></hand>
+
+<!-- <ng-container *ngIf="topCards$ | async as cards"> -->
+    <div *ngFor="let card of (topCards$ | async)">
+        {{card.toString()}}
+    </div>
+<!-- </ng-container> -->

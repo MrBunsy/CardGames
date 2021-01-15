@@ -24,6 +24,7 @@ import { TableComponent } from './components/whist-table/whist-table.component';
 import { PresidentTableComponent } from './components/president-table/president-table.component';
 import { RemotePlayerHandPresidentComponent } from './components/remote-player-hand-president/remote-player-hand-president.component';
 import { PlayPresidentAgainstBotsComponent } from './components/play-president-against-bots/play-president-against-bots.component';
+import { PresidentTrickComponent } from './components/president-trick/president-trick.component';
 
 @NgModule({
   declarations: [
@@ -47,7 +48,8 @@ import { PlayPresidentAgainstBotsComponent } from './components/play-president-a
     TableComponent,
     PresidentTableComponent,
     RemotePlayerHandPresidentComponent,
-    PlayPresidentAgainstBotsComponent
+    PlayPresidentAgainstBotsComponent,
+    PresidentTrickComponent
   ],
   imports: [
     BrowserModule,
