@@ -3,14 +3,14 @@
 <div #logDiv class="log">
     <div *ngFor="let item of log">
       {{item.type}}:
-      <ng-container *ngIf="item.type == 'Bid'">Player {{item.event.player.name}} bid {{item.event.bid}}</ng-container>
-      <ng-container *ngIf="item.type == 'Trumps'">Player {{item.event.player.name}} chose {{item.event.suit}} as trumps
+      <ng-container *ngIf="item.type == 'Bid'">Player {{item.eventInfo.player.name}} bid {{item.eventInfo.bid}}</ng-container>
+      <ng-container *ngIf="item.type == 'Trumps'">Player {{item.eventInfo.player.name}} chose {{item.eventInfo.suit}} as trumps
       </ng-container>
-      <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.event.player.name}} played
-        {{item.event.cards.toString()}}</ng-container>
-      <ng-container *ngIf="item.type == 'TrickWon'">Player {{item.event.player.name}} won the trick</ng-container>
+      <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.eventInfo.player.name}} played
+        {{item.eventInfo.cards.toString()}}</ng-container>
+      <ng-container *ngIf="item.type == 'TrickWon'">Player {{item.eventInfo.player.name}} won the trick</ng-container>
       <ng-container *ngIf="item.type == 'MatchFinished'">Match Complete. Scores:
-        <ng-container *ngFor="let player of item.event.players">
+        <ng-container *ngFor="let player of item.eventInfo.players">
           {{player.player.name}} bid {{player.bid}} won {{player.tricksWon}} = {{player.score}} points
         </ng-container>
       </ng-container>
