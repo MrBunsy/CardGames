@@ -1,0 +1,10 @@
+<div class="scores">
+    <h3>Positions</h3>
+    <table *ngIf="players$| async as players">
+        <tr *ngFor="let player of players$ | async">
+            <td>{{player.positionName}}</td>
+            <td>{{player.name}}</td>
+        </tr>
+    </table>
+    <button (click)="start()">Next Round</button>
+</div>

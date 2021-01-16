@@ -30,7 +30,7 @@ export class PlayPresidentAgainstBotsComponent implements OnInit {
 
     this.subscriptions.push(this.game.getGameEvents().subscribe(event => this.log.push(event as PresidentGameEvent)));
 
-    game.start();
+    // game.start();
 
     
    }

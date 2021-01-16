@@ -13,9 +13,11 @@ export class PresidentTableComponent implements OnInit {
 
   public players$: Observable<PresidentPlayer[]>;
   public openHand = false;
+  public roundRunning$: Observable<boolean>
 
   constructor(private game: PresidentGameService) {
     this.players$ = game.getPlayers();
+    this.roundRunning$ = game.getRoundInProgress();
     
   }
 

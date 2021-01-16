@@ -1,18 +1,24 @@
 <div class="table">
 
-  <ng-container *ngIf="players$ | async as players">
-    <div class="tablefor-{{players.length}}">
-      <div *ngFor="let player of players">
-        <remote-player-hand-president *ngIf="!player.isLocal" [player]="player" [openHand]="openHand">
-        </remote-player-hand-president>
-        <local-player-hand *ngIf="player.isLocal"></local-player-hand>
-      </div>
+  <ng-container *ngIf="!(roundRunning$ | async); else playersTable">
+    <president-scores></president-scores>
+  </ng-container>
+  <ng-template #playersTable>
+    <ng-container *ngIf="players$ | async as players">
+      <div class="tablefor-{{players.length}}">
+        <div *ngFor="let player of players">
+          <remote-player-hand-president *ngIf="!player.isLocal" [player]="player" [openHand]="openHand">
+          </remote-player-hand-president>
+          <local-player-hand *ngIf="player.isLocal"></local-player-hand>
+        </div>
 
-      <div class="trick-holder">
-        <div class="tricks">
-          <president-trick></president-trick>
+        <div class="trick-holder">
+          <div class="tricks">
+            <president-trick></president-trick>
+          </div>
         </div>
       </div>
-    </div>
-  </ng-container>
+    </ng-container>
+  </ng-template>
+
 </div>

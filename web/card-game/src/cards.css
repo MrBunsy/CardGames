@@ -52,14 +52,27 @@ img.card {
 .hhand-compact { 
 	display: inline-block; 
 }
+
+.hhand-compact.extra-compact img.card { 
+	margin-left: -10.5vmin;
+	padding-top: 1vmin;
+}
+
 .hhand-compact img.card:first-child { 
 	margin-left: 0px;
 	padding-top: 1vmin;
 }
+/* .hhand-compact.extra-compact img.card:first-child { 
+	margin-left: 0px;
+	padding-top: 1vmin;
+} */
+
 .hhand-compact img.card { 
 	margin-left: -9vmin;
 	padding-top: 1vmin;
 }
+
+
 /* .hhand-compact.active-hand img.card:hover { 
 	padding-top: 0px;
 	padding-bottom: 10px;
@@ -77,6 +90,14 @@ img.card {
 	display: inline-block;
 	vertical-align: top;
 }
+
+.vhand-compact.extra-compact img.card 
+{
+	display: block; 
+	margin-top: -16vmin;
+	padding-right: 10px;
+}
+
 .vhand-compact img.card:first-child { 
 	display: block; 
 	margin-top: 0px;
@@ -88,6 +109,9 @@ img.card {
 	margin-top: -14vmin;
 	padding-right: 10px;
 }
+
+
+
 .vhand-compact.active-hand img.card:hover,
 .active-hand .vhand-compact img.card:hover { 
 	display: block; 

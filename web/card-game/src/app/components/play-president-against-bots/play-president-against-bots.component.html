@@ -1,18 +1,10 @@
 <president-table></president-table>
 
 <div #logDiv class="log">
-    <div *ngFor="let item of log">
-      {{item.type}}:
-      <ng-container *ngIf="item.type == 'Bid'">Player {{item.eventInfo.player.name}} bid {{item.eventInfo.bid}}</ng-container>
-      <ng-container *ngIf="item.type == 'Trumps'">Player {{item.eventInfo.player.name}} chose {{item.eventInfo.suit}} as trumps
-      </ng-container>
-      <ng-container *ngIf="item.type == 'CardPlayed'">Player {{item.eventInfo.player.name}} played
-        {{item.eventInfo.cards.toString()}}</ng-container>
-      <ng-container *ngIf="item.type == 'TrickWon'">Player {{item.eventInfo.player.name}} won the trick</ng-container>
-      <ng-container *ngIf="item.type == 'MatchFinished'">Match Complete. Scores:
-        <ng-container *ngFor="let player of item.eventInfo.players">
-          {{player.player.name}} bid {{player.bid}} won {{player.tricksWon}} = {{player.score}} points
-        </ng-container>
-      </ng-container>
-    </div>
+  <div *ngFor="let item of log">
+    {{item.type}}:
+    <ng-container *ngIf="item.type == 'CardsPlayed'">Player {{item.eventInfo.player.name}}
+      {{item.eventInfo.cards.length > 0 ? 'played ' + item.eventInfo.cards.toString() : 'passed'}}</ng-container>
+    <ng-container *ngIf="item.type == 'StartTrick'">Player {{item.eventInfo.player.name}} leads the trick</ng-container>
   </div>
+</div>

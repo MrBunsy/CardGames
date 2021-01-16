@@ -28,6 +28,7 @@ export class HandComponent implements OnInit, OnChanges {
   //if provided, specific cards are highlighted and only those can be played
   @Input() validPlays: Card[] = null;
   @Input() compact: boolean = true;
+  @Input() extraCompact: boolean = false;
   @Input() vertical: boolean = false;
   @Input() sortGroupSuits: boolean = true;
 

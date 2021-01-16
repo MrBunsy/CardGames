@@ -79,7 +79,16 @@ export class GameService implements OnDestroy {
     this.gameEventsOut$ = new ReplaySubject<GameEvent>(10);
   }
 
+  /**
+     * Get current match number. Null for not started
+     */
+  public getCurrentRound(): Observable<number> {
+    return this.currentRoundEmitter.asObservable();
+  }
 
+  public getRoundInProgress(): Observable<boolean> {
+    return this.roundInProgressEmittier.asObservable();
+  }
 
   public start() {
     if (!this.game) {
@@ -199,7 +208,7 @@ export class WhistGameService extends GameService {
 
 
 
-  
+
 
 
   public start() {
@@ -375,16 +384,7 @@ export class WhistGameService extends GameService {
     return merge(this.trickEmitter.asObservable(), start)
   }
 
-  /**
-   * Get current match number. Null for not started
-   */
-  public getCurrentRound(): Observable<number> {
-    return this.currentRoundEmitter.asObservable();
-  }
 
-  public getRoundInProgress(): Observable<boolean> {
-    return this.roundInProgressEmittier.asObservable();
-  }
 
   public getCurrentScores(): Observable<ResultsEventInfo> {
     return this.getGameEvents().pipe(

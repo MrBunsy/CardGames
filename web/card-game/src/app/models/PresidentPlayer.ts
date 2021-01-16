@@ -22,6 +22,7 @@ export class PresidentPlayer implements CardPlayer {
     public nextPosition: number;
     public tracksPlayer: PresidentPlayer;
     public isLocal: boolean;
+    public positionName: string;
 
     public dealHand(cards: Card[]) {
         this.cards = cards;
@@ -106,9 +107,34 @@ export class MoronPresidentPlayer extends PresidentPlayer {
     public playOrPass(trickSoFar: Trick): Observable<Card[]> {
         if (trickSoFar.cards.length == 0) {
             //we play first
-            let playCard = this.cards.splice(0, 1);
 
-            return of([playCard[0]]);
+            //see if we want to try playing anything other than singles, deliberatly drop through if we can't
+            let randomChoice = Math.floor(Math.random() * 5);
+            switch (randomChoice) {
+
+                case 4:
+                case 3:
+                case 2:
+                    //try pair/trip/quad
+                    let cards = Deck.getDuplicates(this.cards, randomChoice);
+                    if (cards.length > 0) {
+                        let playCards = cards[0];
+                        for (let card of playCards) {
+                            //take these cards out our hand
+                            this.cards.splice(this.cards.indexOf(card, 1));
+                        }
+                        return of(playCards);
+                    }
+                case 1:
+                //try and play poker hand
+                case 0:
+                    //play single
+
+                    let playCard = this.cards.splice(0, 1);
+                    return of([playCard[0]]);
+            }
+
+
         }
         let topCards = trickSoFar.cards[trickSoFar.cards.length - 1].cards;
         switch (topCards.length) {
