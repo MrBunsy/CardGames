@@ -1,6 +1,6 @@
 <div class="name">{{player.name}}</div>
 <div>
-<div *ngIf="passed$ | async">PASSED</div>
-<hand [cardCount]="(cards$ | async)?.length" [sortGroupSuits] = "false"></hand>
-{{(cards$ | async).length}}
+    <div *ngIf="passed$ | async">PASSED</div>
+    <hand [cardCount]="(cards$ | async)?.length" [sortGroupSuits]="false"></hand>
+    <!-- {{(cards$ | async).length}} -->
 </div>

@@ -62,12 +62,24 @@ export class HandComponent implements OnInit, OnChanges {
 
     if (this.cards === null && this.cardCount >= 0) {
       //given only a count of cards, so assume face down
-      this.drawableCards = [];
+
+      if (this.drawableCards.length == this.cardCount) {
+        //no change
+        return;
+      }
+      if (this.drawableCards.length > this.cardCount) {
+        //remove some
+        this.drawableCards.splice(0, this.drawableCards.length - this.cardCount);
+        return;
+      }
+
+      let drawableCards = [];
       for (let i = 0; i < this.cardCount; i++) {
 
-        this.drawableCards.push(new DrawableCard(new Card("Clubs", 2, false), false, false));
+        drawableCards.push(new DrawableCard(new Card("Clubs", 2, false), false, false));
 
       }
+      this.drawableCards = drawableCards;
       return;
     }
 
