@@ -1,15 +1,37 @@
 <div class="trick-holder">
     <ng-container *ngIf="trickCards$ | async as trickCards">
+        <ng-container *ngFor="let cards of trickCards; let i = index">
+            <div class="trick-hand" [style.top]="i*1+'vmin'" [style.left]="i*1.5+'vmin'">
 
-        <div class="trick-hand" *ngFor="let cards of trickCards; let i = index" >
-            <!-- [ngStyle]="{'margin-top':-i*2+'vh','margin-left':i*2+'vw'}" -->
-            <!-- <hand [cards]="cards" [sortGroupSuits]="false"></hand> -->
-            <div class="hand hhand-compact" >
-                <!-- [style.marginTop.vl]="i*5" [style.marginLeft.vl]="i*5" -->
-                <!--To get the CSS from cardsjs working, have to have an image directly in side a hand, so can't encapsulate in the Card component easily -->
+                <!-- <div class="hand hhand-compact">
+
                 <img *ngFor="let card of cards" class="card" src="assets/cards/{{style}}/{{card.toString()}}.svg"
                     alt="{{card.toString()}}" />
+                    
+            </div> -->
+                <hand [cards]="cards" [sortGroupSuits]="false"></hand>
             </div>
-        </div>
+        </ng-container>
     </ng-container>
 </div>
+
+<!-- TODO - recurse so the hands are in nested divs, and can then use negative margins to stack them-->
+<!-- <ng-template #trickCardsTemplate let-trickCards>
+    {{trickCards}}
+    <div class="trick-hand" *ngIf="trickCards.length > 0">
+        <div class="hand hhand-compact">
+            <hand [cards]="trickCards[0]" [sortGroupSuits]="false"></hand>
+
+            <ng-template *ngIf="trickCards.length > 1" [ngTemplateOutlet]="trickCards"
+                [ngTemplateOutletContext]="{$implicit: trickCards.splice(1,10000)}"></ng-template>
+
+        </div>
+    </div>
+</ng-template>
+
+<div class="trick-holder">
+    <ng-container *ngIf="trickCards$ | async as trickCards">
+        <ng-template [ngTemplateOutlet]="trickCardsTemplate"
+            [ngTemplateOutletContext]="{$implicit: trickCards}"></ng-template>
+    </ng-container>
+</div> -->

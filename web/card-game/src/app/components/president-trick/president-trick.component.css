@@ -1,14 +1,33 @@
  /* .trick-holder {
-	display: inline-block;
-} */
+    padding: 0;
+	margin: 0;
+}
 
-.trick-holder .trick-hand:first-child{
+.trick-hand{
+    width: 60vmin;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	vertical-align: initial;
+    box-sizing: initial;
+    display: inline-block; 
+}
+
+.trick-holder div.trick-hand:first-child{
     margin-top:0px;
     margin-left:0px;
 }
 
-.trick-holder .trick-hand{
-    margin-top:-16vmin;
-    /* margin-left:10vw; */
+.trick-holder div.trick-hand{
+    margin-top:5vmin;
+    margin-left: -55vmin;
 }
+ */
 
+ .trick-holder{
+     position: relative;
+ }
+
+ .trick-hand{
+     position: absolute;
+ }
