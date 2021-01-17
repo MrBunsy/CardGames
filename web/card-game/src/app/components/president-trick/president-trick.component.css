@@ -1,0 +1,14 @@
+ /* .trick-holder {
+	display: inline-block;
+} */
+
+.trick-holder .trick-hand:first-child{
+    margin-top:0px;
+    margin-left:0px;
+}
+
+.trick-holder .trick-hand{
+    margin-top:-16vmin;
+    /* margin-left:10vw; */
+}
+

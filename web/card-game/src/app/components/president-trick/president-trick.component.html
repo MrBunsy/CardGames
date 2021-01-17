@@ -1,7 +1,15 @@
-<hand [cards]="topCards$ | async" [sortGroupSuits] = "false"></hand>
+<div class="trick-holder">
+    <ng-container *ngIf="trickCards$ | async as trickCards">
 
-<!-- <ng-container *ngIf="topCards$ | async as cards"> -->
-    <div *ngFor="let card of (topCards$ | async)">
-        {{card.toString()}}
-    </div>
-<!-- </ng-container> -->
+        <div class="trick-hand" *ngFor="let cards of trickCards; let i = index" >
+            <!-- [ngStyle]="{'margin-top':-i*2+'vh','margin-left':i*2+'vw'}" -->
+            <!-- <hand [cards]="cards" [sortGroupSuits]="false"></hand> -->
+            <div class="hand hhand-compact" >
+                <!-- [style.marginTop.vl]="i*5" [style.marginLeft.vl]="i*5" -->
+                <!--To get the CSS from cardsjs working, have to have an image directly in side a hand, so can't encapsulate in the Card component easily -->
+                <img *ngFor="let card of cards" class="card" src="assets/cards/{{style}}/{{card.toString()}}.svg"
+                    alt="{{card.toString()}}" />
+            </div>
+        </div>
+    </ng-container>
+</div>
