@@ -33,7 +33,7 @@ export class PresidentPlayer implements CardPlayer {
      * @param allPlayers 
      */
     public startRound(allPlayers: PresidentPlayer[]) {
-        this.hasSkipped = false;
+        // this.hasSkipped = false;
     }
 
     /**
@@ -42,7 +42,7 @@ export class PresidentPlayer implements CardPlayer {
      * @param trick 
      */
     public finishTrick(trick: Trick) {
-        this.hasSkipped = false;
+        // this.hasSkipped = false;
         this.nextPosition = -1;
     }
 

@@ -165,6 +165,9 @@ export class LocalPresidentGame implements IGame {
                 stillInTrick++;
             }
         }
+
+        //TODO check to see if current card is unbeatable
+
         if (stillInTrick <= 1) {
             //trick over!
             this.endTrick();
@@ -198,6 +201,11 @@ export class LocalPresidentGame implements IGame {
 
         let stillInRound = 0;
         for (let player of this.players) {
+            player.hasSkipped = false;
+
+            //keep any intelligent AI informed
+            player.finishTrick(currentTrick);
+
             if (player.cards.length > 0) {
                 stillInRound++;
             } else if (player.nextPosition < 0) {
@@ -232,9 +240,6 @@ export class LocalPresidentGame implements IGame {
                                 console.log(`${testPlayer.name} starts next trick`)
                             }
                             currentTrick.winner = testPlayer;
-                            for (let player of this.players) {
-                                player.finishTrick(currentTrick);
-                            }
 
                             this.startTrick(testPlayer);
                             return;

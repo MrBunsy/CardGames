@@ -105,7 +105,7 @@ export class Deck {
             } else {
                 sorted.splice(0, 1);
             }
-        } while (sorted.length > 1)
+        } while (sorted.length >= count)
 
         return pairs;
     }

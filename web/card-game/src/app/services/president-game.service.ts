@@ -32,8 +32,7 @@ export class PresidentGameService extends GameService {
     // this.players$.next(players);
     this.game = new LocalPresidentGame(players);
 
-
-    //so as not to interfer with the internal state of the same player class that will be used by the local AI game, create new objects here
+  //so as not to interfer with the internal state of the same player class that will be used by the local AI game, create new objects here
     //players don't get cards until the game is created
     for (let player of players) {
       let playerTracker = new PresidentPlayer(player.name);
@@ -44,16 +43,7 @@ export class PresidentGameService extends GameService {
       playerTracker.isLocal = false;
       playerTracker.hasSkipped = false;
     }
-
-    //deal out fake cards, these will only be shown face down
-    //todo something bit more elegant
-    let deck = new Deck(true, false, this.currentPlayOrder.length);
-    deck.deal(this.players);
-    for (let player of this.currentPlayOrder) {
-      for (let card of player.cards) {
-        card.faceUp = false;
-      }
-    }
+    
 
     this.rounds = 0;
 
@@ -62,6 +52,20 @@ export class PresidentGameService extends GameService {
 
   }
 
+  private roundStarted(){
+    
+
+    //deal out fake cards, these will only be shown face down
+    //todo something bit more elegant
+    let deck = new Deck(true, false, this.currentPlayOrder.length);
+    deck.deal(this.players);
+    for (let player of this.currentPlayOrder) {
+      player.hasSkipped = false;
+      for (let card of player.cards) {
+        card.faceUp = false;
+      }
+    }
+  }
 
   public getPlayers(): Observable<PresidentPlayer[]> {
     //TODO create game staet of players from game events
@@ -93,6 +97,7 @@ export class PresidentGameService extends GameService {
     console.log(event.type);
     switch (event.type) {
       case "RoundStart":
+        this.roundStarted();
         this.roundInProgressEmittier.next(true);
         break;
       case "RoundEnd": {
