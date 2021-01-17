@@ -109,6 +109,7 @@ export class PresidentGameService extends GameService {
           this.currentPlayOrder[endInfo.nextPositions[i]] = order[i];
         }
         this.rounds++;
+        this.trick = null;
         this.currentRoundEmitter.next(this.rounds);
       }
         break;
